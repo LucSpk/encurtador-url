@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import br.com.lucas.alves.encurtador_url.url.application.dto.encurtador.*;
+import br.com.lucas.alves.encurtador_url.url.application.dto.encurtar.*;
 
 public interface IUrlSwagger {
     
