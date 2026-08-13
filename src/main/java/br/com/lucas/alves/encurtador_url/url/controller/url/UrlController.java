@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.url.controller;
+package br.com.lucas.alves.encurtador_url.url.controller.url;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
