@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.url.application.service;
+package br.com.lucas.alves.encurtador_url.url.application.service.impl;
 
 import br.com.lucas.alves.encurtador_url.url.application.dto.encurtar.*;
 
