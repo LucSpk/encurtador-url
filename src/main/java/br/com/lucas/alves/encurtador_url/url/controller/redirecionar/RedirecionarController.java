@@ -3,13 +3,13 @@ package br.com.lucas.alves.encurtador_url.url.controller.redirecionar;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import br.com.lucas.alves.encurtador_url.url.application.service.RedirecionarService;
+import br.com.lucas.alves.encurtador_url.url.application.service.IRedirecionarService;
 
 public class RedirecionarController implements IRedirecionarSwagger {
 
-    private final RedirecionarService redirecionarService;
+    private final IRedirecionarService redirecionarService;
 
-    public RedirecionarController(RedirecionarService redirecionarService) {
+    public RedirecionarController(IRedirecionarService redirecionarService) {
         this.redirecionarService = redirecionarService;
     }
 

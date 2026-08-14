@@ -6,14 +6,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.lucas.alves.encurtador_url.url.application.dto.encurtar.EncurtarRequest;
 import br.com.lucas.alves.encurtador_url.url.application.dto.encurtar.EncurtarResponse;
-import br.com.lucas.alves.encurtador_url.url.application.service.UrlService;
+import br.com.lucas.alves.encurtador_url.url.application.service.IUrlService;
 
 @RestController
 public class UrlController implements IUrlSwagger {
 
-    private final UrlService urlService;
+    private final IUrlService urlService;
 
-    public UrlController(UrlService urlService) {
+    public UrlController(IUrlService urlService) {
         this.urlService = urlService;
     }
 
