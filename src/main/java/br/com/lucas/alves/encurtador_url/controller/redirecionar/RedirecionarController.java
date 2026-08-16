@@ -1,9 +1,9 @@
-package br.com.lucas.alves.encurtador_url.url.controller.redirecionar;
+package br.com.lucas.alves.encurtador_url.controller.redirecionar;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import br.com.lucas.alves.encurtador_url.url.application.service.IRedirecionarService;
+import br.com.lucas.alves.encurtador_url.application.service.IRedirecionarService;
 
 public class RedirecionarController implements IRedirecionarSwagger {
 

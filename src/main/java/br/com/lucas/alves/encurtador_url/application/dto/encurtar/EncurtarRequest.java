@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.url.application.dto.encurtar;
+package br.com.lucas.alves.encurtador_url.application.dto.encurtar;
 
 public class EncurtarRequest {
     private final String url;

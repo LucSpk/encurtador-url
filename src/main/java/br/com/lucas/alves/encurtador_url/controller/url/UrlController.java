@@ -1,12 +1,12 @@
-package br.com.lucas.alves.encurtador_url.url.controller.url;
+package br.com.lucas.alves.encurtador_url.controller.url;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.lucas.alves.encurtador_url.url.application.dto.encurtar.EncurtarRequest;
-import br.com.lucas.alves.encurtador_url.url.application.dto.encurtar.EncurtarResponse;
-import br.com.lucas.alves.encurtador_url.url.application.service.IUrlService;
+import br.com.lucas.alves.encurtador_url.application.dto.encurtar.EncurtarRequest;
+import br.com.lucas.alves.encurtador_url.application.dto.encurtar.EncurtarResponse;
+import br.com.lucas.alves.encurtador_url.application.service.IUrlService;
 
 @RestController
 public class UrlController implements IUrlSwagger {

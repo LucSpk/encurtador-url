@@ -1,6 +1,6 @@
-package br.com.lucas.alves.encurtador_url.url.application.service.impl;
+package br.com.lucas.alves.encurtador_url.application.service.impl;
 
-import br.com.lucas.alves.encurtador_url.url.application.dto.encurtar.*;
+import br.com.lucas.alves.encurtador_url.application.dto.encurtar.*;
 
 public class UrlService {
     private final String baseUrl = "http://localhost:8080/"; // Base URL for the shortened URLs
