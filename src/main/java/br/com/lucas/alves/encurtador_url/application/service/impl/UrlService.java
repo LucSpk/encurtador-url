@@ -1,9 +1,13 @@
 package br.com.lucas.alves.encurtador_url.application.service.impl;
 
+import org.springframework.stereotype.Service;
+
 import br.com.lucas.alves.encurtador_url.application.dto.encurtar.*;
+import br.com.lucas.alves.encurtador_url.application.service.IUrlService;
 import br.com.lucas.alves.encurtador_url.utils.CodificadorUtil;
 
-public class UrlService {
+@Service
+public class UrlService implements IUrlService {
     private final String baseUrl = "http://localhost:8080/"; // Base URL for the shortened URLs
     public EncurtarResponse encurtarUrl(EncurtarRequest request) {
         // Implementation for shortening URL
