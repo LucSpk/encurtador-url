@@ -69,6 +69,19 @@ public class UrlRepository implements IUrlRepository {
         } catch (SQLException e) {
             LOGGER.error("Error saving URL: {}", e.getMessage());
             throw new RuntimeException("Error saving URL", e);
+        } 
+    }
+
+    @Override
+    public void updateUrlShortCode(long id, String shortCode) {
+        String updateQuery = "UPDATE urls SET short_code = ? WHERE id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
+            ps.setString(1, shortCode);
+            ps.setLong(2, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.error("Error updating URL short code: {}", e.getMessage());
+            throw new RuntimeException("Error updating URL short code", e);
         }
     }
 }

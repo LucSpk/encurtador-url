@@ -18,13 +18,10 @@ public class UrlService implements IUrlService {
     }
     
     public EncurtarResponse encurtarUrl(EncurtarRequest request) {
-        // Implementation for shortening URL
-        
-        // TODO: Subistituir pelo retorno do banco de dados
-        long id = System.currentTimeMillis(); // Placeholder for actual ID generation logic
-        
-        String shortCode = CodificadorUtil.toBase62String(id); // Placeholder for actual short code generation logic
-        urlRepository.saveUrl(request.getUrl(), shortCode);
+        long id = urlRepository.saveUrl(request.getUrl(), null);
+
+        String shortCode = CodificadorUtil.toBase62String(id);
+        urlRepository.updateUrlShortCode(id, shortCode);
 
         return new EncurtarResponse(shortCode, baseUrl + shortCode);
     }
