@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,20 +45,27 @@ public class UrlRepository implements IUrlRepository {
     }
 
     @Override
-    public void saveUrl(String original, String shortened) {
-        PreparedStatement ps;
-        try {
-            ps = connection.prepareStatement(INSERT_URL_QUERY);
+    public long saveUrl(String original, String shortened) {
+        try (PreparedStatement ps = connection.prepareStatement(INSERT_URL_QUERY, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, shortened);
             ps.setString(2, original);
 
             int result = ps.executeUpdate();
+
             if (result == 0) {
                 throw new RuntimeException("Failed to insert URL into the database.");
             }
-            LOGGER.info("URL saved successfully.");
-            
-            ps.close();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+            if (rs.next()) {
+                Long id = rs.getLong(1);
+
+                LOGGER.info("URL saved successfully with id: {}", id);
+
+                return id;
+            }
+            throw new RuntimeException("Failed to retrieve generated ID.");
+        }
         } catch (SQLException e) {
             LOGGER.error("Error saving URL: {}", e.getMessage());
             throw new RuntimeException("Error saving URL", e);
