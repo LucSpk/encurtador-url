@@ -2,6 +2,7 @@ package br.com.lucas.alves.encurtador_url.repository.impl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.slf4j.Logger;
@@ -13,7 +14,8 @@ import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
 @Repository
 public class UrlRepository implements IUrlRepository {
     private static final String insertUrlQuery = "INSERT INTO urls (short_code, original_url) VALUES (?, ?)";
-    
+    private static final String selectUrlQuery = "SELECT original_url FROM urls WHERE short_code = ?";
+
     private final Logger LOG = LoggerFactory.getLogger(UrlRepository.class);
     
     private Connection connection;
@@ -24,8 +26,21 @@ public class UrlRepository implements IUrlRepository {
 
     @Override
     public String getUrlByShortened(String shortened) {
-        // Implement the logic to retrieve the original URL based on the shortened URL
-        return null; // Placeholder return statement
+        try (PreparedStatement ps = connection.prepareStatement(selectUrlQuery)) { // Quando declarado entre parenteses, o PreparedStatement é fechado automaticamente após o bloco try-with-resources
+            ps.setString(1, shortened);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String originalUrl = rs.getString("original_url");
+                    LOG.info("URL found for short code {}: {}", shortened, originalUrl);
+                    return originalUrl;
+                }
+            }
+        } catch (SQLException e) {
+            LOG.error("Error retrieving URL: {}", e.getMessage());
+            throw new RuntimeException("Error retrieving URL", e);
+        }
+        throw new RuntimeException("URL not found for the given shortened code.");
     }
 
     @Override
