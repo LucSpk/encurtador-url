@@ -10,10 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
 
 @Repository
 public class UrlRepository implements IUrlRepository {
+    private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT * FROM urls WHERE original_url = ?";
+    private static final String UPDATE_URL_SET_SHORT_CODE_WHERE_ID_QUERY = "UPDATE urls SET short_code = ? WHERE id = ?";
     private static final String INSERT_URL_QUERY = "INSERT INTO urls (short_code, original_url) VALUES (?, ?)";
     private static final String SELECT_URL_QUERY = "SELECT original_url FROM urls WHERE short_code = ?";
 
@@ -42,6 +45,27 @@ public class UrlRepository implements IUrlRepository {
             throw new RuntimeException("Error retrieving URL", e);
         }
         throw new RuntimeException("URL not found for the given shortened code.");
+    }
+
+    @Override
+    public Url getByUrl(String original) {
+        try (PreparedStatement ps = connection.prepareStatement(SELECT_URL_BY_ORIGINAL_URL)) {
+            ps.setString(1, original);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Url url = new Url();
+                    url.setId(rs.getLong("id"));
+                    url.setShortCode(rs.getString("short_code"));
+                    url.setOriginalUrl(rs.getString("original_url"));
+                    url.setCreatedAt(rs.getString("created_at"));
+                    return url;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Error retrieving URL: {}", e.getMessage());
+            throw new RuntimeException("Error retrieving URL", e);
+        }
+        throw new RuntimeException("URL not found for the given original URL.");
     }
 
     @Override
@@ -74,8 +98,7 @@ public class UrlRepository implements IUrlRepository {
 
     @Override
     public void updateUrlShortCode(long id, String shortCode) {
-        String updateQuery = "UPDATE urls SET short_code = ? WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(updateQuery)) {
+        try (PreparedStatement ps = connection.prepareStatement(UPDATE_URL_SET_SHORT_CODE_WHERE_ID_QUERY)) {
             ps.setString(1, shortCode);
             ps.setLong(2, id);
             ps.executeUpdate();

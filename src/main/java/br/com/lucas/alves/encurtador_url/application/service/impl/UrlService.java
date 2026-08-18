@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.lucas.alves.encurtador_url.application.dto.encurtar.*;
 import br.com.lucas.alves.encurtador_url.application.service.IUrlService;
+import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
 import br.com.lucas.alves.encurtador_url.utils.CodificadorUtil;
 
@@ -18,6 +19,11 @@ public class UrlService implements IUrlService {
     }
     
     public EncurtarResponse encurtarUrl(EncurtarRequest request) {
+        Url url = urlRepository.getByUrl(request.getUrl());
+        if (url != null) {
+            return new EncurtarResponse(url.getShortCode(), baseUrl + url.getShortCode());
+        }
+
         long id = urlRepository.saveUrl(request.getUrl(), null);
 
         String shortCode = CodificadorUtil.toBase62String(id);
