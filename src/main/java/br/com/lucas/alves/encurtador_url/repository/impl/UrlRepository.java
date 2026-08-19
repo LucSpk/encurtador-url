@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public class UrlRepository implements IUrlRepository {
     }
 
     @Override
-    public Url getByUrl(String original) {
+    public Optional<Url> getByUrl(String original) {
         try (PreparedStatement ps = connection.prepareStatement(SELECT_URL_BY_ORIGINAL_URL)) {
             ps.setString(1, original);
             try (ResultSet rs = ps.executeQuery()) {
@@ -58,14 +59,14 @@ public class UrlRepository implements IUrlRepository {
                     url.setShortCode(rs.getString("short_code"));
                     url.setOriginalUrl(rs.getString("original_url"));
                     url.setCreatedAt(rs.getString("created_at"));
-                    return url;
+                    return Optional.of(url);
                 }
             }
         } catch (SQLException e) {
             LOGGER.error("Error retrieving URL: {}", e.getMessage());
             throw new RuntimeException("Error retrieving URL", e);
         }
-        throw new RuntimeException("URL not found for the given original URL.");
+        return Optional.empty();
     }
 
     @Override

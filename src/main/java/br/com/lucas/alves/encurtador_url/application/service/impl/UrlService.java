@@ -1,5 +1,7 @@
 package br.com.lucas.alves.encurtador_url.application.service.impl;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import br.com.lucas.alves.encurtador_url.application.dto.encurtar.*;
@@ -19,8 +21,9 @@ public class UrlService implements IUrlService {
     }
     
     public EncurtarResponse encurtarUrl(EncurtarRequest request) {
-        Url url = urlRepository.getByUrl(request.getUrl());
-        if (url != null) {
+        Optional<Url> urlOptional = urlRepository.getByUrl(request.getUrl());
+        if (urlOptional.isPresent()) {
+            Url url = urlOptional.get();
             return new EncurtarResponse(url.getShortCode(), baseUrl + url.getShortCode());
         }
 
