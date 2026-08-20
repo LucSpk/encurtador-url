@@ -10,5 +10,5 @@ spring:
   cache:
     type: redis
     redis:
-      time-to-live: 1m
+      time-to-live: 5m
       cache-null-values: false
