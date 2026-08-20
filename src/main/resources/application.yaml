@@ -9,3 +9,6 @@ spring:
     
   cache:
     type: redis
+    redis:
+      time-to-live: 1m
+      cache-null-values: false
