@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
+import br.com.lucas.alves.encurtador_url.exceptions.ShortCodeNotFoundException;
 import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
 
 @Repository
@@ -45,7 +46,7 @@ public class UrlRepository implements IUrlRepository {
             LOGGER.error("Error retrieving URL: {}", e.getMessage());
             throw new RuntimeException("Error retrieving URL", e);
         }
-        throw new RuntimeException("URL not found for the given shortened code.");
+        throw new ShortCodeNotFoundException("URL não encontrada para o código encurtado fornecido.");
     }
 
     @Override
