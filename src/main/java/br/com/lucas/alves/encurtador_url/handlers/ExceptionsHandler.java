@@ -1,5 +1,7 @@
 package br.com.lucas.alves.encurtador_url.handlers;
 
+import java.time.ZoneId;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,6 +27,6 @@ public class ExceptionsHandler {
     }
 
     private String getTimeStamp() {
-        return java.time.ZonedDateTime.now().toString();
+        return java.time.ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toString();
     }
 }
