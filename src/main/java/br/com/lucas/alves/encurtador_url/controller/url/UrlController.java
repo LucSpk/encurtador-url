@@ -1,8 +1,11 @@
 package br.com.lucas.alves.encurtador_url.controller.url;
 
+import java.net.URI;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.com.lucas.alves.encurtador_url.application.dto.encurtar.EncurtarRequest;
 import br.com.lucas.alves.encurtador_url.application.dto.encurtar.EncurtarResponse;
@@ -19,6 +22,12 @@ public class UrlController implements IUrlSwagger {
 
     public ResponseEntity<EncurtarResponse> encurtarUrl(@RequestBody EncurtarRequest request) {
         EncurtarResponse response = urlService.encurtarUrl(request);
-        return ResponseEntity.ok(response);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
+            .path("/{id}")
+            .buildAndExpand(response.getShortCode())
+            .toUri();
+
+        return ResponseEntity.created(location).body(response);
     }
 }
