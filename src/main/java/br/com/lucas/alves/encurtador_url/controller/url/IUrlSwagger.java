@@ -8,6 +8,6 @@ import br.com.lucas.alves.encurtador_url.application.dto.encurtar.*;
 
 public interface IUrlSwagger {
     
-    @PostMapping("/encurtar")
+    @PostMapping("/url")
     public ResponseEntity<EncurtarResponse> encurtarUrl(@RequestBody EncurtarRequest request);
 }
