@@ -2,6 +2,7 @@ package br.com.lucas.alves.encurtador_url.application.service.impl;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import br.com.lucas.alves.encurtador_url.application.dto.encurtar.*;
@@ -12,12 +13,12 @@ import br.com.lucas.alves.encurtador_url.utils.CodificadorUtil;
 
 @Service
 public class UrlService implements IUrlService {
-    private static final String baseUrl = "http://localhost:8080/"; // Base URL for the shortened URLs
-    
+    private final String baseUrl;
     private final IUrlRepository urlRepository;
-    
-    public UrlService(IUrlRepository urlRepository) {
+
+    public UrlService(IUrlRepository urlRepository,  @Value("${app.shortener.base-url}") String baseUrl) {
         this.urlRepository = urlRepository;
+        this.baseUrl = baseUrl;
     }
     
     public EncurtarResponse encurtarUrl(EncurtarRequest request) {

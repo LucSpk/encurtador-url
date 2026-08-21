@@ -12,3 +12,7 @@ spring:
     redis:
       time-to-live: 5m
       cache-null-values: false
+
+app:
+  shortener:
+    base-url: ${APP_SHORTENER_BASE_URL:http://localhost:8080/}
