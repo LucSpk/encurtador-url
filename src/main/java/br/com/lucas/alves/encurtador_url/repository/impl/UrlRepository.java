@@ -19,7 +19,7 @@ import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
 
 @Repository
 public class UrlRepository implements IUrlRepository {
-    private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT * FROM urls WHERE original_url = ?";
+private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code, original_url, created_at FROM urls WHERE original_url = ?";
     private static final String UPDATE_URL_SET_SHORT_CODE_WHERE_ID_QUERY = "UPDATE urls SET short_code = ? WHERE id = ?";
     private static final String INSERT_URL_QUERY = "INSERT INTO urls (short_code, original_url) VALUES (?, ?)";
     private static final String SELECT_URL_QUERY = "SELECT original_url FROM urls WHERE short_code = ?";
