@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
+import br.com.lucas.alves.encurtador_url.exceptions.FailToInsertException;
+import br.com.lucas.alves.encurtador_url.exceptions.FailToRetrieveGeneratedIdException;
 import br.com.lucas.alves.encurtador_url.exceptions.ShortCodeNotFoundException;
 import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
 
@@ -79,7 +81,7 @@ public class UrlRepository implements IUrlRepository {
             int result = ps.executeUpdate();
 
             if (result == 0) {
-                throw new RuntimeException("Falha ao inserir URL no banco de dados.");
+                throw new FailToInsertException("Falha ao inserir URL no banco de dados.");
             }
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -90,7 +92,7 @@ public class UrlRepository implements IUrlRepository {
 
                 return id;
             }
-            throw new RuntimeException("Falha ao recuperar o ID gerado.");
+            throw new FailToRetrieveGeneratedIdException("Falha ao recuperar o ID gerado.");
         }
         } catch (SQLException e) {
             LOGGER.error("Error saving URL: {}", e.getMessage());

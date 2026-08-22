@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import br.com.lucas.alves.encurtador_url.exceptions.FailToInsertException;
+import br.com.lucas.alves.encurtador_url.exceptions.FailToRetrieveGeneratedIdException;
 import br.com.lucas.alves.encurtador_url.exceptions.ShortCodeNotFoundException;
 import br.com.lucas.alves.encurtador_url.handlers.dto.ApiExceptionResponse;
 
@@ -24,6 +26,32 @@ public class ExceptionsHandler {
             getTimeStamp()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(FailToInsertException.class)
+    public ResponseEntity<ApiExceptionResponse> failToInsert(FailToInsertException ex) {
+        ApiExceptionResponse response = new ApiExceptionResponse(
+            "Falha ao inserir URL",
+            ex.getMessage(),
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            null,
+            null,
+            getTimeStamp()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    @ExceptionHandler(FailToRetrieveGeneratedIdException.class)
+    public ResponseEntity<ApiExceptionResponse> failToRetrieveGeneratedId(FailToRetrieveGeneratedIdException ex) {
+        ApiExceptionResponse response = new ApiExceptionResponse(
+            "Falha ao recuperar ID gerado",
+            ex.getMessage(),
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            null,
+            null,
+            getTimeStamp()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
     private String getTimeStamp() {
