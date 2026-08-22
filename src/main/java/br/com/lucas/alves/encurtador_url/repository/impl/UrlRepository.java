@@ -79,18 +79,18 @@ public class UrlRepository implements IUrlRepository {
             int result = ps.executeUpdate();
 
             if (result == 0) {
-                throw new RuntimeException("Failed to insert URL into the database.");
+                throw new RuntimeException("Falha ao inserir URL no banco de dados.");
             }
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
             if (rs.next()) {
                 Long id = rs.getLong(1);
 
-                LOGGER.info("URL saved successfully with id: {}", id);
+                LOGGER.info("URL salva com sucesso com id: {}", id);
 
                 return id;
             }
-            throw new RuntimeException("Failed to retrieve generated ID.");
+            throw new RuntimeException("Falha ao recuperar o ID gerado.");
         }
         } catch (SQLException e) {
             LOGGER.error("Error saving URL: {}", e.getMessage());
