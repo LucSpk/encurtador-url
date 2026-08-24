@@ -94,13 +94,13 @@ cd encurtador-url
 Com PostgreSQL e Redis em execução, inicie a aplicação:
 
 ```bash
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
 No Windows, utilize:
 
 ```bat
-mvnw.cmd spring-boot:run
+mvn spring-boot:run
 ```
 
 A API ficará disponível em `http://localhost:8080`.
@@ -110,7 +110,7 @@ A API ficará disponível em `http://localhost:8080`.
 A URL retornada no campo `shortUrl` é construída a partir de `app.shortener.base-url`. Por padrão, ela é `http://localhost:8080/`. Para alterar esse valor:
 
 ```bash
-APP_SHORTENER_BASE_URL=https://exemplo.com/ ./mvnw spring-boot:run
+APP_SHORTENER_BASE_URL=https://exemplo.com/ mvn spring-boot:run
 ```
 
 Garanta que o valor termine com `/` para que o código curto seja concatenado corretamente.
@@ -176,13 +176,13 @@ Quando o código curto não existe, a API retorna `404 Not Found`:
 Executar os testes:
 
 ```bash
-./mvnw test
+mvn test
 ```
 
 Gerar o artefato executável:
 
 ```bash
-./mvnw clean package
+mvn clean package
 ```
 
 O JAR será criado em `target/encurtador-url-0.0.1-SNAPSHOT.jar`.
@@ -218,13 +218,3 @@ src/
 4. A API devolve o código curto e a URL pública correspondente.
 5. Em `GET /{shortCode}`, o Redis é consultado antes do PostgreSQL.
 6. A aplicação responde com `302 Found` e o destino original no header `Location`.
-
-## Configurações atuais e próximos aprimoramentos
-
-- As credenciais e a URL JDBC do PostgreSQL estão definidas diretamente em `PostgreSqlConfig`; em ambientes compartilhados ou de produção, recomenda-se externalizá-las para variáveis de ambiente ou configuração segura.
-- A criação da tabela ainda é manual; uma ferramenta de migration, como Flyway ou Liquibase, pode tornar a implantação reproduzível.
-- A validação do formato da URL e a documentação OpenAPI podem ser adicionadas para fortalecer o contrato público da API.
-
-## Licença
-
-Este projeto ainda não declara uma licença de distribuição.
