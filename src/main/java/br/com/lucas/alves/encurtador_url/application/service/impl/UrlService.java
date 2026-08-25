@@ -34,7 +34,7 @@ public class UrlService implements IUrlService {
                 baseUrl + shortCode
             );
 
-        } catch (DuplicateKeyException _) {     // Padrão sem exceção "_", pois o mesmo URL pode ser encurtado várias vezes
+        } catch (DuplicateKeyException e) {
             @SuppressWarnings("java:S3655")
             Url url = urlRepository.getByUrl(request.getUrl()).get();
 

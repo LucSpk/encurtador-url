@@ -5,10 +5,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 public class PostgreSqlConfig {
@@ -34,5 +39,20 @@ public class PostgreSqlConfig {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create PostgreSQL connection", e);
         } 
+    }
+
+    @Bean
+    public DataSource dataSource() {
+
+        HikariConfig config = new HikariConfig();
+
+        config.setJdbcUrl(postgreUrl);
+        config.setUsername(postgreUser);
+        config.setPassword(postgrePass);
+
+        config.setMaximumPoolSize(10);
+        config.setMinimumIdle(2);
+
+        return new HikariDataSource(config);
     }
 }

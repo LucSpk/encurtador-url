@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -26,15 +28,16 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
 
     private final Logger LOGGER = LoggerFactory.getLogger(UrlRepository.class);
     
-    private Connection connection;
+    // private Connection connection;
+    private final DataSource dataSource;
 
-    public UrlRepository(Connection connection) {
-        this.connection = connection;
+    public UrlRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
     public String getUrlByShortened(String shortened) {
-        try (PreparedStatement ps = connection.prepareStatement(SELECT_URL_QUERY)) { // Quando declarado entre parenteses, o PreparedStatement é fechado automaticamente após o bloco try-with-resources
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(SELECT_URL_QUERY)) { // Quando declarado entre parenteses, o PreparedStatement é fechado automaticamente após o bloco try-with-resources
             ps.setString(1, shortened);
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -53,7 +56,7 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
 
     @Override
     public Optional<Url> getByUrl(String original) {
-        try (PreparedStatement ps = connection.prepareStatement(SELECT_URL_BY_ORIGINAL_URL)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(SELECT_URL_BY_ORIGINAL_URL)) {
             ps.setString(1, original);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -74,7 +77,7 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
 
     @Override
     public long saveUrl(String original, String shortened) {
-        try (PreparedStatement ps = connection.prepareStatement(INSERT_URL_QUERY, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(INSERT_URL_QUERY, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, shortened);
             ps.setString(2, original);
 
@@ -102,7 +105,7 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
 
     @Override
     public void updateUrlShortCode(long id, String shortCode) {
-        try (PreparedStatement ps = connection.prepareStatement(UPDATE_URL_SET_SHORT_CODE_WHERE_ID_QUERY)) {
+        try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(UPDATE_URL_SET_SHORT_CODE_WHERE_ID_QUERY)) {
             ps.setString(1, shortCode);
             ps.setLong(2, id);
             ps.executeUpdate();
