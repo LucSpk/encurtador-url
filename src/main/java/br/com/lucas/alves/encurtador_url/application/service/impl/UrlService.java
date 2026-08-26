@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.com.lucas.alves.encurtador_url.application.dto.encurtar.*;
 import br.com.lucas.alves.encurtador_url.application.service.IUrlService;
@@ -22,6 +23,7 @@ public class UrlService implements IUrlService {
         this.baseUrl = baseUrl;
     }
     
+    @Transactional
     public EncurtarResponse encurtarUrl(EncurtarRequest request) {
         try {
             long id = urlRepository.saveUrl(request.getUrl(), null);
