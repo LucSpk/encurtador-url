@@ -7,14 +7,16 @@ public class ApiExceptionResponse {
     private String technicalMessage;
     private Integer errorCode;
     private Map<String, Object> details;
+    private String path;
     private String traceId;
     private String timestamp;
 
-    public ApiExceptionResponse(String friendlyMessage, String technicalMessage, Integer errorCode, Map<String, Object> details, String traceId, String timestamp) {
+    public ApiExceptionResponse(String friendlyMessage, String technicalMessage, Integer errorCode, Map<String, Object> details, String path, String traceId, String timestamp) {
         this.friendlyMessage = friendlyMessage;
         this.technicalMessage = technicalMessage;
         this.errorCode = errorCode;
         this.details = details;
+        this.path = path;
         this.traceId = traceId;
         this.timestamp = timestamp;
     }
@@ -47,6 +49,14 @@ public class ApiExceptionResponse {
         return details;
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     public void setDetails(Map<String, Object> details) {
         this.details = details;
     }
@@ -66,6 +76,4 @@ public class ApiExceptionResponse {
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
-
-    
 }
