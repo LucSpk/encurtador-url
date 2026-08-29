@@ -43,7 +43,7 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String originalUrl = rs.getString("original_url");
-                    LOGGER.info("URL found for short code {}: {}", shortened, originalUrl);
+                    LOGGER.info("URL found: {}", originalUrl);
                     return originalUrl;
                 }
             }
