@@ -9,14 +9,14 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.com.lucas.alves.encurtador_url.api.requests.EncurtarRequest;
 import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
-import br.com.lucas.alves.encurtador_url.application.service.IUrlService;
+import br.com.lucas.alves.encurtador_url.application.ports.input.IUrlInputPort;
 
 @RestController
 public class UrlController implements IUrlSwagger {
 
-    private final IUrlService urlService;
+    private final IUrlInputPort urlService;
 
-    public UrlController(IUrlService urlService) {
+    public UrlController(IUrlInputPort urlService) {
         this.urlService = urlService;
     }
 

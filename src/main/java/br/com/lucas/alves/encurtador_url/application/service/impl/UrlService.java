@@ -7,13 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.lucas.alves.encurtador_url.api.requests.EncurtarRequest;
 import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
-import br.com.lucas.alves.encurtador_url.application.service.IUrlService;
+import br.com.lucas.alves.encurtador_url.application.ports.input.IUrlInputPort;
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
 import br.com.lucas.alves.encurtador_url.utils.CodificadorUtil;
 
 @Service
-public class UrlService implements IUrlService {
+public class UrlService implements IUrlInputPort {
     private final String baseUrl;
     private final IUrlRepository urlRepository;
 

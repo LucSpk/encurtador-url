@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import br.com.lucas.alves.encurtador_url.application.service.IRedirecionarService;
+import br.com.lucas.alves.encurtador_url.application.ports.input.IRedirecionarInputPort;
 import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
 
 @Service
-public class RedirecionarService implements IRedirecionarService {
+public class RedirecionarService implements IRedirecionarInputPort {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedirecionarService.class);
 
