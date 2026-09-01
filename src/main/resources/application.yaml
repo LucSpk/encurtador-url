@@ -29,3 +29,18 @@ spring:
 app:
   shortener:
     base-url: ${APP_SHORTENER_BASE_URL:http://localhost:8080/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+      livenessState:
+        enabled: true
+      readinessState:
+        enabled: true
