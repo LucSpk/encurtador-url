@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.application.dto.encurtar;
+package br.com.lucas.alves.encurtador_url.api.responses;
 
 public class EncurtarResponse {
     private final String shortCode;

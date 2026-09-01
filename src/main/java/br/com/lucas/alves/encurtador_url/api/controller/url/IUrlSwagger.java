@@ -1,10 +1,11 @@
-package br.com.lucas.alves.encurtador_url.controller.url;
+package br.com.lucas.alves.encurtador_url.api.controller.url;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import br.com.lucas.alves.encurtador_url.application.dto.encurtar.*;
+import br.com.lucas.alves.encurtador_url.api.requests.EncurtarRequest;
+import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
 import br.com.lucas.alves.encurtador_url.handlers.dto.ApiExceptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

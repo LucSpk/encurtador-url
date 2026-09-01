@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.controller.url;
+package br.com.lucas.alves.encurtador_url.api.controller.url;
 
 import java.net.URI;
 
@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import br.com.lucas.alves.encurtador_url.application.dto.encurtar.EncurtarRequest;
-import br.com.lucas.alves.encurtador_url.application.dto.encurtar.EncurtarResponse;
+import br.com.lucas.alves.encurtador_url.api.requests.EncurtarRequest;
+import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
 import br.com.lucas.alves.encurtador_url.application.service.IUrlService;
 
 @RestController

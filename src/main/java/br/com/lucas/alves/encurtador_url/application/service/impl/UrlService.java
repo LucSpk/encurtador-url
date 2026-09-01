@@ -1,13 +1,12 @@
 package br.com.lucas.alves.encurtador_url.application.service.impl;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.com.lucas.alves.encurtador_url.application.dto.encurtar.*;
+import br.com.lucas.alves.encurtador_url.api.requests.EncurtarRequest;
+import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
 import br.com.lucas.alves.encurtador_url.application.service.IUrlService;
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;

@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.application.dto.encurtar;
+package br.com.lucas.alves.encurtador_url.api.requests;
 
 import org.hibernate.validator.constraints.URL;
 

@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.controller.redirecionar;
+package br.com.lucas.alves.encurtador_url.api.controller.redirecionar;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
