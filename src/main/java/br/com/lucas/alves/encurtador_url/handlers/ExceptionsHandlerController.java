@@ -13,9 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import br.com.lucas.alves.encurtador_url.exceptions.FailToInsertException;
-import br.com.lucas.alves.encurtador_url.exceptions.FailToRetrieveGeneratedIdException;
-import br.com.lucas.alves.encurtador_url.exceptions.ShortCodeNotFoundException;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToInsertException;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToRetrieveGeneratedIdException;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
 import br.com.lucas.alves.encurtador_url.handlers.dto.ApiExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 

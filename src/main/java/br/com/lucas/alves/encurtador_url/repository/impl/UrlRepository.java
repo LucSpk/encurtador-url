@@ -15,9 +15,9 @@ import org.springframework.stereotype.Repository;
 
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
-import br.com.lucas.alves.encurtador_url.exceptions.FailToInsertException;
-import br.com.lucas.alves.encurtador_url.exceptions.FailToRetrieveGeneratedIdException;
-import br.com.lucas.alves.encurtador_url.exceptions.ShortCodeNotFoundException;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToInsertException;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToRetrieveGeneratedIdException;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
 
 @Repository
 public class UrlRepository implements IUrlOutputPort {
