@@ -6,16 +6,16 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import br.com.lucas.alves.encurtador_url.application.ports.input.IRedirecionarInputPort;
-import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
+import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
 
 @Service
 public class RedirecionarService implements IRedirecionarInputPort {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedirecionarService.class);
 
-    private final IUrlRepository urlRepository;
+    private final IUrlOutputPort urlRepository;
     
-    public RedirecionarService(IUrlRepository urlRepository) {
+    public RedirecionarService(IUrlOutputPort urlRepository) {
         this.urlRepository = urlRepository;
     }
     

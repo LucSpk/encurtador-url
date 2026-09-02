@@ -13,14 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.exceptions.FailToInsertException;
 import br.com.lucas.alves.encurtador_url.exceptions.FailToRetrieveGeneratedIdException;
 import br.com.lucas.alves.encurtador_url.exceptions.ShortCodeNotFoundException;
-import br.com.lucas.alves.encurtador_url.repository.IUrlRepository;
 
 @Repository
-public class UrlRepository implements IUrlRepository {
+public class UrlRepository implements IUrlOutputPort {
 private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code, original_url, created_at FROM urls WHERE original_url = ?";
     private static final String UPDATE_URL_SET_SHORT_CODE_WHERE_ID_QUERY = "UPDATE urls SET short_code = ? WHERE id = ?";
     private static final String INSERT_URL_QUERY = "INSERT INTO urls (short_code, original_url) VALUES (?, ?)";
