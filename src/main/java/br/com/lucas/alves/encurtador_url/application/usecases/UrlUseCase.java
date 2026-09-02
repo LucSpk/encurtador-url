@@ -13,11 +13,11 @@ import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.utils.CodificadorUtil;
 
 @Service
-public class UrlService implements IUrlInputPort {
+public class UrlUseCase implements IUrlInputPort {
     private final String baseUrl;
     private final IUrlOutputPort urlRepository;
 
-    public UrlService(IUrlOutputPort urlRepository,  @Value("${app.shortener.base-url}") String baseUrl) {
+    public UrlUseCase(IUrlOutputPort urlRepository,  @Value("${app.shortener.base-url}") String baseUrl) {
         this.urlRepository = urlRepository;
         this.baseUrl = baseUrl;
     }

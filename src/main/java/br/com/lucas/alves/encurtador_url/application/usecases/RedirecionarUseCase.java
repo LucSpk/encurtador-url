@@ -9,13 +9,13 @@ import br.com.lucas.alves.encurtador_url.application.ports.input.IRedirecionarIn
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
 
 @Service
-public class RedirecionarService implements IRedirecionarInputPort {
+public class RedirecionarUseCase implements IRedirecionarInputPort {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedirecionarService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RedirecionarUseCase.class);
 
     private final IUrlOutputPort urlRepository;
     
-    public RedirecionarService(IUrlOutputPort urlRepository) {
+    public RedirecionarUseCase(IUrlOutputPort urlRepository) {
         this.urlRepository = urlRepository;
     }
     
