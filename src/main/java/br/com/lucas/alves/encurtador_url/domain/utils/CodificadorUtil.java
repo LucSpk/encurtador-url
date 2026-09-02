@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.utils;
+package br.com.lucas.alves.encurtador_url.domain.utils;
 
 public class CodificadorUtil {
 

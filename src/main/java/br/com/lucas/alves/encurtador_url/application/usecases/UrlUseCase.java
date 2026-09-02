@@ -10,7 +10,7 @@ import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
 import br.com.lucas.alves.encurtador_url.application.ports.input.IUrlInputPort;
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
-import br.com.lucas.alves.encurtador_url.utils.CodificadorUtil;
+import br.com.lucas.alves.encurtador_url.domain.utils.CodificadorUtil;
 
 @Service
 public class UrlUseCase implements IUrlInputPort {
