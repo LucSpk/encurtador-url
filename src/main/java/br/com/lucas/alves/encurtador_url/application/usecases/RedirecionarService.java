@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.application.service.impl;
+package br.com.lucas.alves.encurtador_url.application.usecases;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
