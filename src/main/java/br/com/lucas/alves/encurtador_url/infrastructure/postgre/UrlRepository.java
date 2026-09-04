@@ -27,8 +27,7 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
     private static final String SELECT_URL_QUERY = "SELECT original_url FROM urls WHERE short_code = ?";
 
     private final Logger LOGGER = LoggerFactory.getLogger(UrlRepository.class);
-    
-    // private Connection connection;
+
     private final DataSource dataSource;
 
     public UrlRepository(DataSource dataSource) {
