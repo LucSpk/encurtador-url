@@ -1,4 +1,4 @@
-package br.com.lucas.alves.encurtador_url.infrastructure.postegre;
+package br.com.lucas.alves.encurtador_url.infrastructure.postgre;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
