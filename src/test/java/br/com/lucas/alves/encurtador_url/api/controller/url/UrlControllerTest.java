@@ -35,7 +35,7 @@ class UrlControllerTest {
         EncurtarResponse encurtarResponse = new EncurtarResponse("shortCode", "http://short.url/shortCode");
         EncurtarRequest request = new EncurtarRequest("https://www.example.com");
         
-        when(urlInputPort.encurtarUrl(any())).thenReturn(encurtarResponse);
+        //when(urlInputPort.encurtarUrl(any())).thenReturn(encurtarResponse);
 
         simulaContextoHttp();
 
