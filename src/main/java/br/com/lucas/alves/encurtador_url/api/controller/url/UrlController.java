@@ -2,6 +2,7 @@ package br.com.lucas.alves.encurtador_url.api.controller.url;
 
 import java.net.URI;
 
+import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +22,9 @@ public class UrlController implements IUrlSwagger {
     }
 
     public ResponseEntity<EncurtarResponse> encurtarUrl(@RequestBody EncurtarRequest request) {
-        EncurtarResponse response = urlService.encurtarUrl(request);
+        String traceId = MDC.get("traceId");
+        
+        EncurtarResponse response = urlService.encurtarUrl(request, traceId);
 
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
             .path("/{id}")

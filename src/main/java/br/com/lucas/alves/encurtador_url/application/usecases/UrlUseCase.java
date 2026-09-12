@@ -23,18 +23,14 @@ public class UrlUseCase implements IUrlInputPort {
     }
     
     @Transactional
-    public EncurtarResponse encurtarUrl(EncurtarRequest request) {
+    public EncurtarResponse encurtarUrl(EncurtarRequest request, String traceId) {
         try {
-            long id = urlRepository.saveUrl(request.getUrl(), null);
-
-            String shortCode = CodificadorUtil.toBase62String(id);
-            urlRepository.updateUrlShortCode(id, shortCode);
+            urlRepository.saveUrl(request.getUrl(), traceId);
 
             return new EncurtarResponse(
-                shortCode,
-                baseUrl + shortCode
+                traceId,
+                baseUrl + traceId
             );
-
         } catch (DuplicateKeyException e) {
             @SuppressWarnings("java:S3655")
             Url url = urlRepository.getByUrl(request.getUrl()).get();
