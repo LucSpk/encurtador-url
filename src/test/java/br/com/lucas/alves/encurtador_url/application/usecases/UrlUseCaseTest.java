@@ -2,6 +2,7 @@ package br.com.lucas.alves.encurtador_url.application.usecases;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -77,6 +78,21 @@ class UrlUseCaseTest {
 
             verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
             verify(urlRepository, times(1)).getByUrl("https://www.example.com");
+        }
+
+        @Test
+        @DisplayName("Quando a URL base não está configurada, então lança uma exceção")
+        void whenBaseUrlIsNotConfigured_ThenThrowsException() {
+            UrlUseCase useCaseWithoutBaseUrl = new UrlUseCase(urlRepository, "");
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+
+            IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> useCaseWithoutBaseUrl.encurtarUrl(request, "123456")
+            );
+
+            assertEquals("Base URL is not configured.", exception.getMessage());
+            verify(urlRepository, times(0)).saveUrl("https://www.example.com", "123456");
         }
     }
 }
