@@ -34,8 +34,8 @@ class UrlControllerTest {
     void whenValidUrlIsProvided_ThenReturnShortenedUrl_WithStatusCode201() {
         EncurtarResponse encurtarResponse = new EncurtarResponse("shortCode", "http://short.url/shortCode");
         EncurtarRequest request = new EncurtarRequest("https://www.example.com");
-        
-        //when(urlInputPort.encurtarUrl(any())).thenReturn(encurtarResponse);
+
+        when(urlInputPort.encurtarUrl(any(EncurtarRequest.class), any())).thenReturn(encurtarResponse);
 
         simulaContextoHttp();
 
