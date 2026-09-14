@@ -49,12 +49,17 @@ class UrlRepositoryTest {
     @DisplayName("Quando o método getUrlByShortened é executado")
     class GetUrlByShortenedTests {
 
+        @BeforeEach
+        void setUp() throws SQLException {
+            when(dataSource.getConnection()).thenReturn(connection);
+            when(connection.prepareStatement("SELECT original_url FROM urls WHERE short_code = ?"))
+                .thenReturn(preparedStatement);
+            when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        }
+
         @Test
         @DisplayName("Quando o código curto existe, então retorna a URL original")
         void whenShortCodeExists_thenReturnsOriginalUrl() throws SQLException {
-            when(dataSource.getConnection()).thenReturn(connection);
-            when(connection.prepareStatement("SELECT original_url FROM urls WHERE short_code = ?")).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
             when(resultSet.next()).thenReturn(true);
             when(resultSet.getString("original_url")).thenReturn("https://www.example.com");
 
@@ -67,9 +72,6 @@ class UrlRepositoryTest {
         @Test
         @DisplayName("Quando o código curto não existe, então lança ShortCodeNotFoundException")
         void whenShortCodeDoesNotExist_thenThrowsShortCodeNotFoundException() throws SQLException {
-            when(dataSource.getConnection()).thenReturn(connection);
-            when(connection.prepareStatement("SELECT original_url FROM urls WHERE short_code = ?")).thenReturn(preparedStatement);
-            when(preparedStatement.executeQuery()).thenReturn(resultSet);
             when(resultSet.next()).thenReturn(false);
 
             ShortCodeNotFoundException exception = assertThrows(
