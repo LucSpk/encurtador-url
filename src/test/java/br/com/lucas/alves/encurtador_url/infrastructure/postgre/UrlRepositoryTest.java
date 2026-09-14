@@ -49,8 +49,7 @@ class UrlRepositoryTest {
     @DisplayName("Quando o método getUrlByShortened é executado")
     class GetUrlByShortenedTests {
 
-        @BeforeEach
-        void setUp() throws SQLException {
+        private void givenSuccessfulQuery() throws SQLException {
             when(dataSource.getConnection()).thenReturn(connection);
             when(connection.prepareStatement("SELECT original_url FROM urls WHERE short_code = ?"))
                 .thenReturn(preparedStatement);
@@ -60,6 +59,7 @@ class UrlRepositoryTest {
         @Test
         @DisplayName("Quando o código curto existe, então retorna a URL original")
         void whenShortCodeExists_thenReturnsOriginalUrl() throws SQLException {
+            givenSuccessfulQuery();
             when(resultSet.next()).thenReturn(true);
             when(resultSet.getString("original_url")).thenReturn("https://www.example.com");
 
@@ -72,6 +72,7 @@ class UrlRepositoryTest {
         @Test
         @DisplayName("Quando o código curto não existe, então lança ShortCodeNotFoundException")
         void whenShortCodeDoesNotExist_thenThrowsShortCodeNotFoundException() throws SQLException {
+            givenSuccessfulQuery();
             when(resultSet.next()).thenReturn(false);
 
             ShortCodeNotFoundException exception = assertThrows(
@@ -81,6 +82,24 @@ class UrlRepositoryTest {
 
             assertEquals("URL não encontrada para o código encurtado fornecido.", exception.getMessage());
             verify(preparedStatement).setString(1, "not-found");
+        }
+
+        @Test
+        @DisplayName("Deve lançar RuntimeException quando ocorrer SQLException ao recuperar URL")
+        void deveLancarRuntimeExceptionQuandoOcorrerSQLException() throws SQLException {
+            SQLException sqlException = new SQLException("Erro no banco");
+
+            when(dataSource.getConnection()).thenThrow(sqlException);
+
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> urlRepository.getUrlByShortened("abc123")
+            );
+
+            assertEquals("Error retrieving URL", exception.getMessage());
+            assertEquals(sqlException, exception.getCause());
+
+            verify(dataSource).getConnection();
         }
     }
 }
