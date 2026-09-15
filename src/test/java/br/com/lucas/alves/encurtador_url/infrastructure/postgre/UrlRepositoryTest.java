@@ -87,8 +87,8 @@ class UrlRepositoryTest {
         }
 
         @Test
-        @DisplayName("Deve lançar RuntimeException quando ocorrer SQLException ao recuperar URL")
-        void deveLancarRuntimeExceptionQuandoOcorrerSQLException() throws SQLException {
+        @DisplayName("Quando o ocorrer uma SQLException deve lançar RuntimeException ao recuperar URL")
+        void whenSQLException_thenThrowRuntimeException() throws SQLException {
             SQLException sqlException = new SQLException("Erro no banco");
 
             when(dataSource.getConnection()).thenThrow(sqlException);
@@ -149,5 +149,22 @@ class UrlRepositoryTest {
 
             verify(preparedStatement).setString(1, "https://www.example.com");
         }
+
+        @Test
+        @DisplayName("Quando o ocorrer uma SQLException deve lançar RuntimeException ao recuperar URL")
+        void whenSQLException_thenThrowRuntimeException() throws SQLException{
+            SQLException sqlException = new SQLException("Erro no banco");
+            when(dataSource.getConnection()).thenThrow(sqlException);
+
+            RuntimeException exception = assertThrows(
+                RuntimeException.class, 
+                () -> urlRepository.getByUrl("https://www.example.com")
+            );
+
+            assertEquals("Error retrieving URL", exception.getMessage());
+            assertEquals(sqlException, exception.getCause());
+
+            verify(dataSource).getConnection();
+        } 
     }
 }
