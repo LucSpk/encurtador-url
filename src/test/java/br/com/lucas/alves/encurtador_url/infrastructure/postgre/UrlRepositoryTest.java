@@ -231,5 +231,23 @@ class UrlRepositoryTest {
             verify(preparedStatement).setString(1, "abc123");
             verify(preparedStatement).setString(2, "https://www.example.com");
         }
+
+        @Test
+        @DisplayName("Quando o ocorrer uma SQLException deve lançar RuntimeException ao recuperar URL")
+        void whenSQLException_thenThrowRuntimeException() throws SQLException {
+            SQLException sqlException = new SQLException("Erro no banco");
+
+            when(dataSource.getConnection()).thenThrow(sqlException);
+
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> urlRepository.getUrlByShortened("abc123")
+            );
+
+            assertEquals("Error retrieving URL", exception.getMessage());
+            assertEquals(sqlException, exception.getCause());
+
+            verify(dataSource).getConnection();
+        }
     }
 }
