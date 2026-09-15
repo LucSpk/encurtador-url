@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -166,5 +167,32 @@ class UrlRepositoryTest {
 
             verify(dataSource).getConnection();
         } 
+    }
+
+    @Nested 
+    @DisplayName("Quando o método saveUrl é executado")
+    class SaveUrlTesTs {
+
+        private void givenSuccessfulQuery() throws SQLException {
+            when(dataSource.getConnection()).thenReturn(connection);
+            when(connection.prepareStatement("INSERT INTO urls (short_code, original_url) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS))
+                .thenReturn(preparedStatement);
+            when(preparedStatement.executeUpdate()).thenReturn(1);
+        }
+
+        @Test
+        @DisplayName("Quando a URL inserida ainda não existir salva com sucesso e retorna o id")
+        void whenUrlNotExists_ThenSaveAndReturnId()throws SQLException {
+            givenSuccessfulQuery();
+            when(preparedStatement.getGeneratedKeys()).thenReturn(resultSet);
+            when(resultSet.next()).thenReturn(true);
+            when(resultSet.getLong(1)).thenReturn(5L);
+            
+            long id = urlRepository.saveUrl("https://www.example.com", "abc123");
+
+            assertEquals(5L, id);
+            verify(preparedStatement).setString(1, "abc123");
+            verify(preparedStatement).setString(2, "https://www.example.com");
+        }
     }
 }
