@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
@@ -100,6 +102,52 @@ class UrlRepositoryTest {
             assertEquals(sqlException, exception.getCause());
 
             verify(dataSource).getConnection();
+        }
+    }
+
+    @Nested
+    @DisplayName("Quando o método getByUrl é executado")
+    class GetByUrlTests {
+        private void givenSuccessfulQuery() throws SQLException {
+            when(dataSource.getConnection()).thenReturn(connection);
+            when(connection.prepareStatement("SELECT id, short_code, original_url, created_at FROM urls WHERE original_url = ?"))
+                .thenReturn(preparedStatement);
+            when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        }
+
+        @Test 
+        @DisplayName("Quando a URL original existe, então retorna o objeto Url")
+        void whenOriginalUrlExists_thenReturnsUrlObject() throws SQLException {
+            givenSuccessfulQuery();
+            when(resultSet.next()).thenReturn(true);
+            when(resultSet.getLong("id")).thenReturn(1L);
+            when(resultSet.getString("short_code")).thenReturn("abc123");
+            when(resultSet.getString("original_url")).thenReturn("https://www.example.com");
+            when(resultSet.getString("created_at")).thenReturn("2024-06-01 12:00:00");
+
+            Optional<Url> urlOptional = urlRepository.getByUrl("https://www.example.com");
+
+            assertEquals(true, urlOptional.isPresent());
+            Url url = urlOptional.get();
+            assertEquals(1L, url.getId());
+            assertEquals("abc123", url.getShortCode());
+            assertEquals("https://www.example.com", url.getOriginalUrl());
+            assertEquals("2024-06-01 12:00:00", url.getCreatedAt());
+
+            verify(preparedStatement).setString(1, "https://www.example.com");
+        }
+
+        @Test 
+        @DisplayName("Quan a URL original não existe, então retornar nulo") 
+        void whenOriginalNotExists_thenReturnsNull() throws SQLException {
+            givenSuccessfulQuery();
+            when(resultSet.next()).thenReturn(false);
+
+            Optional<Url> urlOptional = urlRepository.getByUrl("https://www.example.com");
+
+            assertEquals(false, urlOptional.isPresent());
+
+            verify(preparedStatement).setString(1, "https://www.example.com");
         }
     }
 }
