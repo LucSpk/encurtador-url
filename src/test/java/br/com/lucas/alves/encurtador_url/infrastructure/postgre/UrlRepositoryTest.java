@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToInsertException;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToRetrieveGeneratedIdException;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
@@ -192,6 +193,23 @@ class UrlRepositoryTest {
             long id = urlRepository.saveUrl("https://www.example.com", "abc123");
 
             assertEquals(5L, id);
+            verify(preparedStatement).setString(1, "abc123");
+            verify(preparedStatement).setString(2, "https://www.example.com");
+        }
+
+        @Test
+        @DisplayName("Quando a URL inserida ocorre uma falha ao recuperar o ID, então lança FailToRetrieveGeneratedIdException")
+        void whenUrlNotExists_ThenThrowFailToRetrieveIdException()throws SQLException {
+            givenSuccessfulQuery();
+            when(preparedStatement.getGeneratedKeys()).thenReturn(resultSet);
+            when(resultSet.next()).thenReturn(false);
+            
+            FailToRetrieveGeneratedIdException exception = assertThrows(
+                FailToRetrieveGeneratedIdException.class,
+                () -> urlRepository.saveUrl("https://www.example.com", "abc123")
+            );
+
+            assertEquals("Falha ao recuperar o ID gerado.", exception.getMessage());
             verify(preparedStatement).setString(1, "abc123");
             verify(preparedStatement).setString(2, "https://www.example.com");
         }
