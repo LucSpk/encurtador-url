@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToInsertException;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
@@ -191,6 +192,24 @@ class UrlRepositoryTest {
             long id = urlRepository.saveUrl("https://www.example.com", "abc123");
 
             assertEquals(5L, id);
+            verify(preparedStatement).setString(1, "abc123");
+            verify(preparedStatement).setString(2, "https://www.example.com");
+        }
+
+        @Test
+        @DisplayName("Quando a URL inserida ocorre uma falha ao inserir, então lança FailToInsertException")
+        void whenUrlNotExists_ThenThrowFailToInsertException()throws SQLException {
+            when(dataSource.getConnection()).thenReturn(connection);
+            when(connection.prepareStatement("INSERT INTO urls (short_code, original_url) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS))
+                .thenReturn(preparedStatement);
+            when(preparedStatement.executeUpdate()).thenReturn(0);
+            
+            FailToInsertException exception = assertThrows(
+                FailToInsertException.class,
+                () -> urlRepository.saveUrl("https://www.example.com", "abc123")
+            );
+
+            assertEquals("Falha ao inserir URL no banco de dados.", exception.getMessage());
             verify(preparedStatement).setString(1, "abc123");
             verify(preparedStatement).setString(2, "https://www.example.com");
         }
