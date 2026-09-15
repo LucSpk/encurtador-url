@@ -241,10 +241,10 @@ class UrlRepositoryTest {
 
             RuntimeException exception = assertThrows(
                 RuntimeException.class,
-                () -> urlRepository.getUrlByShortened("abc123")
+                () -> urlRepository.saveUrl("https://www.example.com", "abc123")
             );
 
-            assertEquals("Error retrieving URL", exception.getMessage());
+            assertEquals("Error saving URL", exception.getMessage());
             assertEquals(sqlException, exception.getCause());
 
             verify(dataSource).getConnection();
