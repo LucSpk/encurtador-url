@@ -109,5 +109,20 @@ class UrlUseCaseTest {
             assertEquals("Base URL is not configured.", exception.getMessage());
             verify(urlRepository, times(0)).saveUrl("https://www.example.com", "123456");
         }
+
+        @Test 
+        @DisplayName("Quando tenta salvar recebe uma excption qualquer e retorna uma RuntimeException")
+        void whenSaveThrowsAnyException_ThenThrowsRuntimeException() {
+            when(urlRepository.saveUrl("https://www.example.com", "123456")).thenThrow(new RuntimeException("Database error"));
+            
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> urlUseCase.encurtarUrl(request, "123456")
+            );
+
+            assertEquals("Error while shortening URL", exception.getMessage());
+            verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
+        }
     }
 }

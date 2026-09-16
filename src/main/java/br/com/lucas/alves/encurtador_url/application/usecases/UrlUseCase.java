@@ -42,6 +42,8 @@ public class UrlUseCase implements IUrlInputPort {
                 url.getShortCode(),
                 baseUrl + url.getShortCode()
             );
+        } catch (Exception e) {
+            throw new RuntimeException("Error while shortening URL", e);
         }
     }
 }
