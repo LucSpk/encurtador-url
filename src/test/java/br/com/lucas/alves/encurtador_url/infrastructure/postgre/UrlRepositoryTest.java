@@ -55,9 +55,7 @@ class UrlRepositoryTest {
     class GetUrlByShortenedTests {
 
         private void givenSuccessfulQuery() throws SQLException {
-            when(dataSource.getConnection()).thenReturn(connection);
-            when(connection.prepareStatement("SELECT original_url FROM urls WHERE short_code = ?"))
-                .thenReturn(preparedStatement);
+            preparaMocks("SELECT original_url FROM urls WHERE short_code = ?");
             when(preparedStatement.executeQuery()).thenReturn(resultSet);
         }
 
@@ -256,9 +254,7 @@ class UrlRepositoryTest {
     class UpdateUrlShortCodeTests {
 
         private void givenSuccessfulQuery() throws SQLException {
-            when(dataSource.getConnection()).thenReturn(connection);
-            when(connection.prepareStatement("UPDATE urls SET short_code = ? WHERE id = ?"))
-                .thenReturn(preparedStatement);
+            preparaMocks("UPDATE urls SET short_code = ? WHERE id = ?");
         }
 
         @Test
@@ -288,5 +284,10 @@ class UrlRepositoryTest {
 
             verify(dataSource).getConnection();
         }
+    }
+
+    private void preparaMocks(String query) throws SQLException {
+        when(dataSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(query)).thenReturn(preparedStatement);
     }
 }
