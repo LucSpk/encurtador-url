@@ -10,6 +10,7 @@ import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
 import br.com.lucas.alves.encurtador_url.application.ports.input.IUrlInputPort;
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.UrlNotFoundAfterDuplicateKeyException;
 
 @Service
 public class UrlUseCase implements IUrlInputPort {
@@ -36,12 +37,15 @@ public class UrlUseCase implements IUrlInputPort {
             );
         } catch (DuplicateKeyException e) {
             @SuppressWarnings("java:S3655")
-            Url url = urlRepository.getByUrl(request.getUrl()).get();
+            Url url = urlRepository.getByUrl(request.getUrl())
+                .orElseThrow(() -> new UrlNotFoundAfterDuplicateKeyException("URL not found after DuplicateKeyException"));
 
             return new EncurtarResponse(
                 url.getShortCode(),
                 baseUrl + url.getShortCode()
             );
+        } catch(UrlNotFoundAfterDuplicateKeyException e) {
+            throw e; 
         } catch (Exception e) {
             throw new RuntimeException("Error while shortening URL", e);
         }

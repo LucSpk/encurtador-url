@@ -22,6 +22,7 @@ import br.com.lucas.alves.encurtador_url.api.requests.EncurtarRequest;
 import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.UrlNotFoundAfterDuplicateKeyException;
 
 @ExtendWith (MockitoExtension.class)
 @DisplayName("Testes para UrlUseCase")
@@ -141,5 +142,22 @@ class UrlUseCaseTest {
             verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
             verify(urlRepository, times(1)).getByUrl("https://www.example.com");
         } 
+
+        @Test 
+        @DisplayName("Quando uma URL duplicada é fornecida, mas getByUrl retorna null, então lança uma UrlNotFoundAfterDuplicateKeyException")
+        void whenDuplicateUrlIsProvidedAndGetByUrlReturnsNull_ThenThrowsUrlNotFoundAfterDuplicateKeyException() {
+            when(urlRepository.saveUrl("https://www.example.com", "123456")).thenThrow(new DuplicateKeyException("Duplicate key"));
+            when(urlRepository.getByUrl("https://www.example.com")).thenReturn(Optional.empty());
+
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            UrlNotFoundAfterDuplicateKeyException exception = assertThrows(
+                UrlNotFoundAfterDuplicateKeyException.class,
+                () -> urlUseCase.encurtarUrl(request, "123456")
+            );
+
+            assertEquals("URL not found after DuplicateKeyException", exception.getMessage());
+            verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
+            verify(urlRepository, times(1)).getByUrl("https://www.example.com");
+        }
     }
 }
