@@ -94,5 +94,20 @@ class UrlUseCaseTest {
             assertEquals("Base URL is not configured.", exception.getMessage());
             verify(urlRepository, times(0)).saveUrl("https://www.example.com", "123456");
         }
+
+        @Test
+        @DisplayName("Quando a URL base é nula, então lança uma exceção")
+        void whenBaseUrlIsNull_ThenThrowsException() {
+            UrlUseCase useCaseWithoutBaseUrl = new UrlUseCase(urlRepository, null);
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+
+            IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> useCaseWithoutBaseUrl.encurtarUrl(request, "123456")
+            );
+
+            assertEquals("Base URL is not configured.", exception.getMessage());
+            verify(urlRepository, times(0)).saveUrl("https://www.example.com", "123456");
+        }
     }
 }
