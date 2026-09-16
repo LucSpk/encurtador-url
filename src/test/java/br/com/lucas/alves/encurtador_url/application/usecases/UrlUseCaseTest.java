@@ -159,5 +159,21 @@ class UrlUseCaseTest {
             verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
             verify(urlRepository, times(1)).getByUrl("https://www.example.com");
         }
+
+        @Test 
+        @DisplayName("Quando request possui argumantos nullo retornar illegalArgumentException")
+        void whenRequestHasNullArguments_ThenThrowIllegalArgumentException() {
+            validaIllegalArgumentException(null, "123456", "URL must not be null or empty");
+            validaIllegalArgumentException(new EncurtarRequest(null), "123456", "URL must not be null or empty");
+            validaIllegalArgumentException(new EncurtarRequest(""), "123456", "URL must not be null or empty");
+        }
+
+        private void validaIllegalArgumentException(EncurtarRequest request, String traceId, String expectedMessage) {
+            IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> urlUseCase.encurtarUrl(request, traceId)
+            );
+            assertEquals(expectedMessage, exception.getMessage());
+        }
     }
 }

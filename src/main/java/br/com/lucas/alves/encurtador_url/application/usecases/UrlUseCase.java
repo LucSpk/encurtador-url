@@ -24,6 +24,10 @@ public class UrlUseCase implements IUrlInputPort {
     
     @Transactional
     public EncurtarResponse encurtarUrl(EncurtarRequest request, String traceId) {
+        if(request == null || request.getUrl() == null || request.getUrl().isEmpty()) {
+            throw new IllegalArgumentException("URL must not be null or empty");
+        }
+        
         if(baseUrl == null || baseUrl.isEmpty()) {
             throw new IllegalStateException("Base URL is not configured.");
         }
