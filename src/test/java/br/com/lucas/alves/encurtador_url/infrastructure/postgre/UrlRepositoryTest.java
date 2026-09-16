@@ -99,10 +99,7 @@ class UrlRepositoryTest {
                 () -> urlRepository.getUrlByShortened("abc123")
             );
 
-            assertEquals("Error retrieving URL", exception.getMessage());
-            assertEquals(sqlException, exception.getCause());
-
-            verify(dataSource).getConnection();
+            verificaExeption("Error retrieving URL", sqlException, exception);
         }
     }
 
@@ -162,10 +159,7 @@ class UrlRepositoryTest {
                 () -> urlRepository.getByUrl("https://www.example.com")
             );
 
-            assertEquals("Error retrieving URL", exception.getMessage());
-            assertEquals(sqlException, exception.getCause());
-
-            verify(dataSource).getConnection();
+            verificaExeption("Error retrieving URL", sqlException, exception);
         } 
     }
 
@@ -242,10 +236,7 @@ class UrlRepositoryTest {
                 () -> urlRepository.saveUrl("https://www.example.com", "abc123")
             );
 
-            assertEquals("Error saving URL", exception.getMessage());
-            assertEquals(sqlException, exception.getCause());
-
-            verify(dataSource).getConnection();
+            verificaExeption("Error saving URL", sqlException, exception);
         }
     }
 
@@ -278,12 +269,16 @@ class UrlRepositoryTest {
                 RuntimeException.class,
                 () -> urlRepository.updateUrlShortCode(1L, "newCode")
             );
-
-            assertEquals("Error updating URL short code", exception.getMessage());
-            assertEquals(sqlException, exception.getCause());
-
-            verify(dataSource).getConnection();
+            
+            verificaExeption("Error updating URL short code", sqlException, exception);
         }
+    }
+
+    private void verificaExeption(String mensagemEsperada, SQLException sqlException, RuntimeException exception) throws SQLException {
+        assertEquals(mensagemEsperada, exception.getMessage());
+        assertEquals(sqlException, exception.getCause());
+
+        verify(dataSource).getConnection();
     }
 
     private void preparaMocks(String query) throws SQLException {
