@@ -124,5 +124,22 @@ class UrlUseCaseTest {
             assertEquals("Error while shortening URL", exception.getMessage());
             verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
         }
+
+        @Test 
+        @DisplayName("Quando uma URL duplicada é fornecida, recebe erro ao chamar getByUrl e retorna uma RuntimeException")
+        void whenDuplicateUrlIsProvidedAndGetByUrlThrowsException_ThenThrowsRuntimeException() {
+            when(urlRepository.saveUrl("https://www.example.com", "123456")).thenThrow(new DuplicateKeyException("Duplicate key"));
+            when(urlRepository.getByUrl("https://www.example.com")).thenThrow(new RuntimeException("Database error"));
+
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> urlUseCase.encurtarUrl(request, "123456")
+            );
+
+            assertEquals("Database error", exception.getMessage());
+            verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
+            verify(urlRepository, times(1)).getByUrl("https://www.example.com");
+        } 
     }
 }
