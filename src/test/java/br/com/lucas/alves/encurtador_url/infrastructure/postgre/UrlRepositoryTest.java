@@ -250,4 +250,43 @@ class UrlRepositoryTest {
             verify(dataSource).getConnection();
         }
     }
+
+    @Nested
+    @DisplayName("Quando o método updateUrlShortCode é executado") 
+    class UpdateUrlShortCodeTests {
+
+        private void givenSuccessfulQuery() throws SQLException {
+            when(dataSource.getConnection()).thenReturn(connection);
+            when(connection.prepareStatement("UPDATE urls SET short_code = ? WHERE id = ?"))
+                .thenReturn(preparedStatement);
+        }
+
+        @Test
+        @DisplayName("Quando o código curto é atualizado com sucesso")
+        void whenUpdateShortCode_thenSuccess() throws SQLException {
+            givenSuccessfulQuery();
+            urlRepository.updateUrlShortCode(1L, "newCode");
+
+            verify(preparedStatement).setString(1, "newCode");
+            verify(preparedStatement).setLong(2, 1L);
+        }
+
+        @Test
+        @DisplayName("Quando o ocorrer uma SQLException deve lançar RuntimeException ao recuperar URL")
+        void whenSQLException_thenThrowRuntimeException() throws SQLException {
+            SQLException sqlException = new SQLException("Erro no banco");
+
+            when(dataSource.getConnection()).thenThrow(sqlException);
+
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> urlRepository.updateUrlShortCode(1L, "newCode")
+            );
+
+            assertEquals("Error updating URL short code", exception.getMessage());
+            assertEquals(sqlException, exception.getCause());
+
+            verify(dataSource).getConnection();
+        }
+    }
 }
