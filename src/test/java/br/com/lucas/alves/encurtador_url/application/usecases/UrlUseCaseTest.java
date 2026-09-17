@@ -168,6 +168,13 @@ class UrlUseCaseTest {
             validaIllegalArgumentException(new EncurtarRequest(""), "123456", "URL must not be null or empty");
         }
 
+        @Test 
+        @DisplayName("Quando traceId é nullo ou vazio retornar illegalArgumentException")
+        void whenTraceIdIsNullOrEmpty_ThenThrowIllegalArgumentException() {
+            validaIllegalArgumentException(new EncurtarRequest("https://www.example.com"), null, "Trace ID must not be null or empty");
+            validaIllegalArgumentException(new EncurtarRequest("https://www.example.com"), "", "Trace ID must not be null or empty");
+        }
+
         private void validaIllegalArgumentException(EncurtarRequest request, String traceId, String expectedMessage) {
             IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
