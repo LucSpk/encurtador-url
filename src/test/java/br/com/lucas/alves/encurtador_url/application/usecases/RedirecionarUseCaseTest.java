@@ -36,4 +36,17 @@ class RedirecionarUseCaseTest {
         assertEquals(originalUrl, result);
         verify(urlRepository).getUrlByShortened(shortCode);
     }
+
+    @Test 
+    @DisplayName("Quando um código curto inválido é fornecido, então retorna null")
+    void whenInvalidShortCodeIsProvided_ThenReturnNull() {
+        String shortCode = "invalidShortCode";
+
+        when(urlRepository.getUrlByShortened(shortCode)).thenReturn(null);
+
+        String result = redirecionarUseCase.redirecionar(shortCode);
+
+        assertEquals(null, result);
+        verify(urlRepository).getUrlByShortened(shortCode);
+    }
 }
