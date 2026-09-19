@@ -1,6 +1,7 @@
 package br.com.lucas.alves.encurtador_url.application.usecases;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
-import net.bytebuddy.asm.Advice.Thrown;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para RedirecionarUseCase")
@@ -38,24 +39,21 @@ class RedirecionarUseCaseTest {
         verify(urlRepository).getUrlByShortened(shortCode);
     }
 
-    @Test 
-    @DisplayName("Quando um código curto inválido é fornecido, então retorna null")
-    void whenInvalidShortCodeIsProvided_ThenReturnNull() {
+    @Test
+    @DisplayName("Quando um código curto não existe, então lança ShortCodeNotFoundException")
+    void whenShortCodeDoesNotExist_ThenThrowsShortCodeNotFoundException() {
         String shortCode = "invalidShortCode";
 
         when(urlRepository.getUrlByShortened(shortCode)).thenReturn(null);
 
-        String result = redirecionarUseCase.redirecionar(shortCode);
-
-        assertEquals(null, result);
+        assertThrows(ShortCodeNotFoundException.class, () -> redirecionarUseCase.redirecionar(shortCode));
         verify(urlRepository).getUrlByShortened(shortCode);
     }
 
     @Test
-    @DisplayName("Quando um código curto nulo é fornecido, então retorna null")
-    void whenNullShortCodeIsProvided_ThenReturnNull() {
+    @DisplayName("Quando um código curto nulo é fornecido, então lança ShortCodeNotFoundException")
+    void whenNullShortCodeIsProvided_ThenThrowsShortCodeNotFoundException() {
         String shortCode = null;
-        String result = redirecionarUseCase.redirecionar(shortCode);
-        assertEquals(null, result);
+        assertThrows(ShortCodeNotFoundException.class, () -> redirecionarUseCase.redirecionar(shortCode));
     }
 }

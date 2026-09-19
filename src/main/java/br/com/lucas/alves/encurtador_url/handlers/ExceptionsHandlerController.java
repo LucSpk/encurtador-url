@@ -64,7 +64,7 @@ public class ExceptionsHandlerController {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiExceptionResponse> unexpectedError(FailToRetrieveGeneratedIdException ex, HttpServletRequest request) {
+    public ResponseEntity<ApiExceptionResponse> unexpectedError(Exception ex, HttpServletRequest request) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         
         ApiExceptionResponse response = buildApiExceptionResponse(

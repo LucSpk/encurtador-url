@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.lucas.alves.encurtador_url.application.ports.input.IRedirecionarInputPort;
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
 
 @Service
 public class RedirecionarUseCase implements IRedirecionarInputPort {
@@ -23,9 +24,13 @@ public class RedirecionarUseCase implements IRedirecionarInputPort {
     public String redirecionar(String shortCode) {
         if (shortCode == null || shortCode.trim().isEmpty()) {
             LOGGER.warn("Código curto inválido fornecido: {}", shortCode);
-            return null;
+            throw new ShortCodeNotFoundException("URL não encontrada para o código encurtado fornecido.");
         }
         LOGGER.info("Consultando URL para código curto no banco de dados: {}", shortCode);
-        return urlRepository.getUrlByShortened(shortCode);
+        String originalUrl = urlRepository.getUrlByShortened(shortCode);
+        if (originalUrl == null || originalUrl.trim().isEmpty()) {
+            throw new ShortCodeNotFoundException("URL não encontrada para o código encurtado fornecido.");
+        }
+        return originalUrl;
     }
 }
