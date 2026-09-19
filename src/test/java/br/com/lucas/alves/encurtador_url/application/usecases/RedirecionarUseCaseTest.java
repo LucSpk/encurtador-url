@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
+import net.bytebuddy.asm.Advice.Thrown;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para RedirecionarUseCase")
@@ -48,5 +49,13 @@ class RedirecionarUseCaseTest {
 
         assertEquals(null, result);
         verify(urlRepository).getUrlByShortened(shortCode);
+    }
+
+    @Test
+    @DisplayName("Quando um código curto nulo é fornecido, então retorna null")
+    void whenNullShortCodeIsProvided_ThenReturnNull() {
+        String shortCode = null;
+        String result = redirecionarUseCase.redirecionar(shortCode);
+        assertEquals(null, result);
     }
 }
