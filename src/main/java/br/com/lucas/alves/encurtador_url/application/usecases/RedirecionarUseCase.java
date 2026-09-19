@@ -21,6 +21,10 @@ public class RedirecionarUseCase implements IRedirecionarInputPort {
     
     @Cacheable(value = "urls", key = "#shortCode")
     public String redirecionar(String shortCode) {
+        if (shortCode == null || shortCode.trim().isEmpty()) {
+            LOGGER.warn("Código curto inválido fornecido: {}", shortCode);
+            return null;
+        }
         LOGGER.info("Consultando URL para código curto no banco de dados: {}", shortCode);
         return urlRepository.getUrlByShortened(shortCode);
     }
