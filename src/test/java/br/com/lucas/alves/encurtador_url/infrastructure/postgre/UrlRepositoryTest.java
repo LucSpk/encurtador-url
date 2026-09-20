@@ -238,6 +238,22 @@ class UrlRepositoryTest {
 
             verificaExeption("Error saving URL", sqlException, exception);
         }
+
+        @Test
+        @DisplayName("Quando saveUrl falha em executeUpdate lança RuntimeException")
+        void whenSaveUrlFails_thenThrowRuntimeException() throws SQLException {
+            givenSuccessfulQuery();
+            when(preparedStatement.executeUpdate()).thenThrow(new SQLException("Erro no executeUpdate"));
+
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> urlRepository.saveUrl("https://www.example.com", "abc123")
+            );
+
+            assertEquals("Error saving URL", exception.getMessage());
+            verify(preparedStatement).setString(1, "abc123");
+            verify(preparedStatement).setString(2, "https://www.example.com");
+        }
     }
 
     @Nested

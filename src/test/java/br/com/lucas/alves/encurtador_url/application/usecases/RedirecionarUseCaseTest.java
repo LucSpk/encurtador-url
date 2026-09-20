@@ -46,7 +46,10 @@ class RedirecionarUseCaseTest {
 
         when(urlRepository.getUrlByShortened(shortCode)).thenReturn(null);
 
-        assertThrows(ShortCodeNotFoundException.class, () -> redirecionarUseCase.redirecionar(shortCode));
+        assertThrows(
+            ShortCodeNotFoundException.class, 
+            () -> redirecionarUseCase.redirecionar(shortCode)
+        );
         verify(urlRepository).getUrlByShortened(shortCode);
     }
 
@@ -54,6 +57,9 @@ class RedirecionarUseCaseTest {
     @DisplayName("Quando um código curto nulo é fornecido, então lança ShortCodeNotFoundException")
     void whenNullShortCodeIsProvided_ThenThrowsShortCodeNotFoundException() {
         String shortCode = null;
-        assertThrows(ShortCodeNotFoundException.class, () -> redirecionarUseCase.redirecionar(shortCode));
+        assertThrows(
+            ShortCodeNotFoundException.class, 
+            () -> redirecionarUseCase.redirecionar(shortCode)
+        );
     }
 }
