@@ -25,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToInsertException;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToRetrieveGeneratedIdException;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToUpdateException;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
@@ -278,6 +279,7 @@ class UrlRepositoryTest {
 
         private void givenSuccessfulQuery() throws SQLException {
             preparaMocks("UPDATE urls SET short_code = ? WHERE id = ?");
+            when(preparedStatement.executeUpdate()).thenReturn(1);
         }
 
         @Test
@@ -303,6 +305,20 @@ class UrlRepositoryTest {
             );
             
             verificaExeption("Error updating URL short code", sqlException, exception);
+        }
+
+        @Test 
+        @DisplayName("Quando updateUrlShortCode com executeUpdate() throws FailToUpdateException")
+        void whenUpdateUrlShortCodeThrowsFailToUpdateException() throws SQLException {
+            givenSuccessfulQuery();
+            when(preparedStatement.executeUpdate()).thenReturn(0);
+
+            FailToUpdateException exception = assertThrows(
+                FailToUpdateException.class,
+                () -> urlRepository.updateUrlShortCode(1L, "newCode")
+            );
+
+            assertEquals("Falha ao atualizar código curto da URL.", exception.getMessage());
         }
     }
 

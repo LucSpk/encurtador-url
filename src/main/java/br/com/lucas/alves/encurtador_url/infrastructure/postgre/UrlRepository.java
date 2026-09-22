@@ -17,6 +17,7 @@ import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToInsertException;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToRetrieveGeneratedIdException;
+import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToUpdateException;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
 
 @Repository
@@ -107,7 +108,10 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
         try (Connection connection = dataSource.getConnection(); PreparedStatement ps = connection.prepareStatement(UPDATE_URL_SET_SHORT_CODE_WHERE_ID_QUERY)) {
             ps.setString(1, shortCode);
             ps.setLong(2, id);
-            ps.executeUpdate();
+            int result = ps.executeUpdate();
+            if (result == 0) {
+                throw new FailToUpdateException("Falha ao atualizar código curto da URL.");
+            }
         } catch (SQLException e) {
             LOGGER.error("Error updating URL short code: {}", e.getMessage());
             throw new RuntimeException("Error updating URL short code", e);
