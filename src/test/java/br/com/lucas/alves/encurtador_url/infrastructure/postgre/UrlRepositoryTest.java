@@ -27,6 +27,7 @@ import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToInsertException
 import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToRetrieveGeneratedIdException;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.FailToUpdateException;
 import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundException;
+import net.bytebuddy.asm.Advice.Thrown;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Testes para UrlRepository")
@@ -162,6 +163,21 @@ class UrlRepositoryTest {
 
             verificaExeption("Error retrieving URL", sqlException, exception);
         } 
+
+        @Test
+        @DisplayName("Quando rs.getLong, rs.getString ou rs.getDate lançar SQLException deve lançar RuntimeException")
+        void whenResultSetThrowsSQLException_thenThrowRuntimeException() throws SQLException {
+            givenSuccessfulQuery();
+            when(resultSet.next()).thenReturn(true);
+            when(resultSet.getLong("id")).thenThrow(new SQLException("Erro ao recuperar id"));
+
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> urlRepository.getByUrl("https://www.example.com")
+            );
+
+            assertEquals("Error retrieving URL", exception.getMessage());
+        }
     }
 
     @Nested 
