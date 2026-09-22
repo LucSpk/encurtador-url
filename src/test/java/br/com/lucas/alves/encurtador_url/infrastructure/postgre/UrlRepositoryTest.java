@@ -254,6 +254,22 @@ class UrlRepositoryTest {
             verify(preparedStatement).setString(1, "abc123");
             verify(preparedStatement).setString(2, "https://www.example.com");
         }
+
+        @Test
+        @DisplayName("Quando a URL inserida ainda não existir salva com sucesso mas retorna uma exception ao getGeneratedKeys, então lança RuntimeException")
+        void whenUrlNotExists_thenThrowRuntimeException()throws SQLException {
+            givenSuccessfulQuery();
+            when(preparedStatement.getGeneratedKeys()).thenThrow(new SQLException("Erro no executeUpdate"));
+            
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> urlRepository.saveUrl("https://www.example.com", "abc123")
+            );
+
+            assertEquals("Error saving URL", exception.getMessage());
+            verify(preparedStatement).setString(1, "abc123");
+            verify(preparedStatement).setString(2, "https://www.example.com");
+        }
     }
 
     @Nested
