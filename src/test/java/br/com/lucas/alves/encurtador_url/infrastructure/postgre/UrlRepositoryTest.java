@@ -296,7 +296,6 @@ class UrlRepositoryTest {
         @DisplayName("Quando o ocorrer uma SQLException deve lançar RuntimeException ao recuperar URL")
         void whenSQLException_thenThrowRuntimeException() throws SQLException {
             SQLException sqlException = new SQLException("Erro no banco");
-
             when(dataSource.getConnection()).thenThrow(sqlException);
 
             RuntimeException exception = assertThrows(
@@ -319,6 +318,22 @@ class UrlRepositoryTest {
             );
 
             assertEquals("Falha ao atualizar código curto da URL.", exception.getMessage());
+        }
+
+        @Test
+        @DisplayName("Quando executeUpdate ocorrer uma SQLException deve lançar RuntimeException")
+        void whenExecuteUpdate_thenThrowRuntimeException() throws SQLException {
+            givenSuccessfulQuery();
+            SQLException sqlException = new SQLException("Erro no banco");
+
+            when(preparedStatement.executeUpdate()).thenThrow(sqlException);
+
+            RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> urlRepository.updateUrlShortCode(1L, "newCode")
+            );
+            
+            verificaExeption("Error updating URL short code", sqlException, exception);
         }
     }
 
