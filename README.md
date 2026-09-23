@@ -1,64 +1,74 @@
 # Encurtador de URLs
 
-API REST para transformar URLs longas em links curtos e redirecioná-los posteriormente. O projeto foi desenvolvido com Spring Boot, utiliza PostgreSQL como armazenamento persistente e Redis para cache das consultas de redirecionamento.
+Aplicação REST em Java com Spring Boot para encurtar URLs longas, persistir os dados em PostgreSQL e redirecionar para a URL original com cache em Redis.
 
-## Funcionalidades
+## Visão geral
 
-- Criação de URLs curtas a partir de uma URL original.
-- Reutilização do mesmo código curto quando a URL original já estiver cadastrada.
-- Redirecionamento HTTP para a URL original por meio do código curto.
-- Geração determinística de códigos em Base62 a partir do identificador persistido.
-- Cache em Redis para reduzir consultas ao PostgreSQL durante os redirecionamentos.
-- Respostas de erro estruturadas para códigos curtos inexistentes e falhas de persistência.
+A API oferece dois fluxos principais:
 
-## Tecnologias
+- `POST /url`: recebe uma URL válida e retorna um código curto associado;
+- `GET /{shortCode}`: busca a URL original e retorna um redirecionamento HTTP 302.
+
+Também há suporte para:
+
+- reutilização de URL já cadastrada;
+- tratamento padronizado de exceções;
+- logging com `traceId` por requisição;
+- cache de consultas em Redis;
+- documentação OpenAPI via Swagger UI.
+
+## Stack tecnológica
 
 - Java 17
 - Spring Boot 4.1.0
 - Spring Web
+- Spring Validation
 - Spring Cache
 - Spring Data Redis
-- PostgreSQL 18
+- Spring JDBC
+- PostgreSQL
+- Redis
+- Springdoc OpenAPI
 - Maven Wrapper
-- JUnit 5 e Spring Boot Test
+- JUnit 5 + Mockito
 
-## Pré-requisitos
+## Requisitos
 
-- JDK 17 ou superior
-- Docker, para executar PostgreSQL e Redis localmente
-- Porta `5432` livre para PostgreSQL
-- Porta `6379` livre para Redis
-- Porta `8080` livre para a aplicação
+- JDK 17+
+- Docker para subir PostgreSQL e Redis localmente
+- Portas livres:
+  - `5432` para PostgreSQL
+  - `6379` para Redis
+  - `8080` para a aplicação
 
-## Configuração da infraestrutura
+## Configuração local
 
 ### PostgreSQL
 
-O projeto espera uma conexão PostgreSQL com os seguintes dados locais:
+A aplicação usa a seguinte configuração padrão:
 
-| Propriedade | Valor esperado |
-|---|---|
-| Host | `localhost` |
-| Porta | `5432` |
-| Banco | `url_shortener` |
-| Usuário | `postgres` |
-| Senha | `postgres` |
+- host: `localhost`
+- porta: `5432`
+- banco: `url_shortener`
+- usuário: `postgres`
+- senha: `postgres`
 
-Para criar o banco rapidamente usando a imagem oficial do PostgreSQL 18:
+Iniciando via Docker:
 
 ```bash
-docker run --name postgres-url-shortener
-   -e POSTGRES_USER=postgres
-   -e POSTGRES_PASSWORD=postgres
-   -e POSTGRES_DB=url_shortener   
-   -p 5432:5432   
-   -v postgres-url-shortener-data:/var/lib/postgresql   
-   -d postgres:18
+docker run -d \
+  --name postgres-url-shortener \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=url_shortener \
+  -p 5432:5432 \
+  -v postgres-url-shortener-data:/var/lib/postgresql/data \
+  postgres:16-alpine
 ```
 
-A aplicação não possui migration automática. Crie a tabela esperada pelo repositório antes de iniciar a API:
+Crie a tabela esperada pela aplicação antes de iniciar o projeto:
 
-```SQL
+```sql
 CREATE TABLE IF NOT EXISTS urls (
     id BIGSERIAL PRIMARY KEY,
     short_code VARCHAR(32) UNIQUE,
@@ -67,98 +77,124 @@ CREATE TABLE IF NOT EXISTS urls (
 );
 ```
 
-O guia completo de operação, diagnóstico e persistência do PostgreSQL está em [doc/postgresql_docker_guia.md](doc/postgresql_docker_guia.md).
+O guia adicional de operação do PostgreSQL está em [doc/postgresql_docker_guia.md](doc/postgresql_docker_guia.md).
 
 ### Redis
 
-Inicie o Redis localmente com:
-
 ```bash
 docker run -d \
-  --name redis \
+  --name redis-url-shortener \
   -p 6379:6379 \
-  redis:latest
+  redis:7-alpine
 ```
 
-A configuração padrão usa `localhost:6379`. O cache `urls` possui TTL de 5 minutos e não armazena valores nulos.
+A aplicação está configurada para conectar em `localhost:6379` e usa cache com TTL de 5 minutos para as consultas de redirecionamento.
 
-## Executando o projeto
+## Executando a aplicação
 
-Clone o repositório e entre no diretório do projeto:
+Clone e entre na pasta do projeto:
 
 ```bash
 git clone <URL_DO_REPOSITORIO>
 cd encurtador-url
 ```
 
-Com PostgreSQL e Redis em execução, inicie a aplicação:
+Inicie a aplicação com o Maven Wrapper:
 
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
-No Windows, utilize:
+No Windows:
 
 ```bat
-mvn spring-boot:run
+mvnw.cmd spring-boot:run
 ```
 
-A API ficará disponível em `http://localhost:8080`.
+A API ficará disponível em:
 
-### Configuração da URL base
+- `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- Health check: `http://localhost:8080/actuator/health`
 
-A URL retornada no campo `shortUrl` é construída a partir de `app.shortener.base-url`. Por padrão, ela é `http://localhost:8080/`. Para alterar esse valor:
+### Base URL da aplicação
+
+A URL curta gerada é montada a partir da propriedade `app.shortener.base-url`, cujo valor padrão é:
+
+```yaml
+app:
+  shortener:
+    base-url: http://localhost:8080/
+```
+
+Você pode sobrescrever esse valor no ambiente:
 
 ```bash
-APP_SHORTENER_BASE_URL=https://exemplo.com/ mvn spring-boot:run
+APP_SHORTENER_BASE_URL=https://exemplo.com/ ./mvnw spring-boot:run
 ```
 
-Garanta que o valor termine com `/` para que o código curto seja concatenado corretamente.
+O valor deve terminar com `/` para concatenar corretamente o código curto.
 
-## API
+## Endpoints da API
 
-### Criar uma URL curta
+### 1) Criar uma URL curta
 
-`POST /url`
+Endpoint:
 
-Requisição:
+```http
+POST /url
+```
+
+Exemplo:
 
 ```bash
 curl -i -X POST http://localhost:8080/url \
   -H 'Content-Type: application/json' \
-  -d '{"url":"https://www.exemplo.com/artigo/com-uma-url-longa"}'
+  -H 'traceId: req-12345' \
+  -d '{"url":"https://www.exemplo.com/artigo/com-uma-url-muito-longa"}'
 ```
 
-Resposta `201 Created`:
+Resposta esperada (`201 Created`):
 
 ```json
 {
-  "shortCode": "1",
-  "shortUrl": "http://localhost:8080/1"
+  "shortCode": "req-12345",
+  "shortUrl": "http://localhost:8080/req-12345"
 }
 ```
 
-O header `Location` também aponta para a URL curta criada. Se a URL original já existir, a API retorna o código curto previamente associado a ela.
+> Se a URL informada já estiver cadastrada, a API retorna o código curto já existente.
 
-### Redirecionar para a URL original
+O header `Location` também aponta para o endpoint curto gerado.
 
-`GET /{shortCode}`
+### 2) Redirecionar para a URL original
 
-```bash
-curl -i http://localhost:8080/1
+Endpoint:
+
+```http
+GET /{shortCode}
 ```
 
-Resposta esperada: `302 Found`, com o header `Location` contendo a URL original.
-
-Para acompanhar o redirecionamento diretamente pelo terminal:
+Exemplo:
 
 ```bash
-curl -i -L http://localhost:8080/1
+curl -i http://localhost:8080/req-12345
 ```
 
-### URL não encontrada
+Resposta esperada:
 
-Quando o código curto não existe, a API retorna `404 Not Found`:
+- status: `302 Found`
+- header `Location`: URL original
+
+Para seguir o redirecionamento automaticamente:
+
+```bash
+curl -i -L http://localhost:8080/req-12345
+```
+
+### 3) Requisição inválida / URL não encontrada
+
+Quando o código curto não existe, a API devolve `404` com um payload padronizado de erro. Exemplo:
 
 ```json
 {
@@ -171,50 +207,64 @@ Quando o código curto não existe, a API retorna `404 Not Found`:
 }
 ```
 
-## Testes e build
-
-Executar os testes:
-
-```bash
-mvn test
-```
-
-Gerar o artefato executável:
-
-```bash
-mvn clean package
-```
-
-O JAR será criado em `target/encurtador-url-0.0.1-SNAPSHOT.jar`.
-
-Executar o JAR:
-
-```bash
-java -jar target/encurtador-url-0.0.1-SNAPSHOT.jar
-```
-
-O teste atual valida o carregamento do contexto Spring. Os testes de integração que iniciam a aplicação precisam de PostgreSQL e Redis disponíveis.
-
 ## Estrutura do projeto
 
 ```text
 src/
 ├── main/
-│   ├── java/.../application/     # DTOs e serviços de aplicação
-│   ├── java/.../config/          # Configuração de conexão com PostgreSQL
-│   ├── java/.../controller/      # Endpoints de criação e redirecionamento
-│   ├── java/.../domain/          # Entidades de domínio
-│   ├── java/.../handlers/        # Tratamento padronizado de exceções
-│   ├── java/.../repository/      # Persistência via JDBC
-│   └── resources/application.yaml
-└── test/                          # Testes automatizados
+│   ├── java/
+│   │   └── br/com/lucas/alves/encurtador_url/
+│   │       ├── api/                 # Controllers, requests e responses
+│   │       ├── application/         # Casos de uso e ports
+│   │       ├── config/              # Configurações gerais da aplicação
+│   │       ├── domain/              # Entidades e exceções de domínio
+│   │       ├── handlers/            # Tratamento padronizado de erros
+│   │       ├── infrastructure/      # Implementações de persistência
+│   │       └── EncurtadorUrlApplication.java
+│   └── resources/
+│       └── application.yaml
+├── test/
+│   └── java/                       # Testes unitários do projeto
+├── doc/
+│   └── postgresql_docker_guia.md
+├── pom.xml
+├── mvnw / mvnw.cmd
+├── README.md
+└── target/
 ```
 
 ## Fluxo da aplicação
 
-1. O cliente envia uma URL original para `POST /url`.
-2. A URL é persistida no PostgreSQL e recebe um identificador sequencial.
-3. O identificador é convertido para Base62 e salvo como `short_code`.
-4. A API devolve o código curto e a URL pública correspondente.
-5. Em `GET /{shortCode}`, o Redis é consultado antes do PostgreSQL.
-6. A aplicação responde com `302 Found` e o destino original no header `Location`.
+1. O cliente envia uma URL para `POST /url`.
+2. A requisição recebe um `traceId` (gerado automaticamente pelo interceptor ou fornecido no header).
+3. A aplicação tenta salvar a URL com esse valor como `short_code` no PostgreSQL.
+4. Se a URL já existir, o código curto existente é reutilizado.
+5. Em `GET /{shortCode}`, a aplicação consulta o Redis antes do banco.
+6. Quando encontra o registro, responde com redirecionamento `302` para a URL original.
+
+## Testes e build
+
+Executar todos os testes:
+
+```bash
+./mvnw test
+```
+
+Gerar artefato executável:
+
+```bash
+./mvnw clean package
+```
+
+Executar o JAR gerado:
+
+```bash
+java -jar target/encurtador-url-0.0.1-SNAPSHOT.jar
+```
+
+## Observações importantes
+
+- O projeto depende de PostgreSQL e Redis em execução antes do startup da API.
+- O banco não realiza migrations automáticas; é necessário criar a tabela manualmente.
+- O swagger oferece uma interface visual para testar os endpoints sem uso de ferramentas externas.
+- A aplicação usa `traceId` como identificador curto da URL, e o filtro HTTP garante que ele exista em toda requisição que não seja health check.
