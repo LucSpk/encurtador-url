@@ -1,11 +1,11 @@
 package br.com.lucas.alves.encurtador_url.integracao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,52 +14,39 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.testcontainers.containers.GenericContainer;
 
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
 import br.com.lucas.alves.encurtador_url.application.usecases.RedirecionarUseCase;
 
 @SpringBootTest
+@Import(CacheIntegrationTest.TestCacheConfig.class)
 class CacheIntegrationTest {
 
-    static GenericContainer<?> redis =
-        new GenericContainer<>("redis:7-alpine")
-            .withExposedPorts(6379);
+    @TestConfiguration
+    static class TestCacheConfig {
 
-    static {
-        redis.start();
+        @Bean(name = "testCacheManager")
+        @Primary
+        CacheManager testCacheManager() {
+            return new ConcurrentMapCacheManager("urls");
+        }
     }
 
-    @Autowired
+    @Autowired 
     private RedirecionarUseCase redirecionarUseCase;
 
-    @MockitoBean
+    @MockitoBean 
     private IUrlOutputPort urlOutputPort;
 
     @Autowired
     private CacheManager cacheManager;
-
-    @DynamicPropertySource
-    static void configureRedis(DynamicPropertyRegistry registry) {
-        registry.add(
-            "spring.data.redis.host",
-            redis::getHost
-        );
-
-        registry.add(
-            "spring.data.redis.port",
-            () -> redis.getMappedPort(6379)
-        );
-    }
-
-    @AfterAll
-    static void tearDown() {
-        redis.stop();
-    }
 
     @BeforeEach
     void setUp() {
@@ -76,7 +63,9 @@ class CacheIntegrationTest {
                 .thenReturn(originalUrl);
 
         String result = redirecionarUseCase.redirecionar(shortCode);
+        
         assertEquals(originalUrl, result);
+        
         verify(urlOutputPort, times(1))
                 .getUrlByShortened(shortCode);
 
@@ -86,5 +75,28 @@ class CacheIntegrationTest {
             .get();
         
         assertEquals(originalUrl, cachedValue);
+    }
+
+    @Test
+    @DisplayName("Deve retornar a URL do Redis sem consultar o repository novamente")
+    void deveRetornarUrlDoRedis() {
+
+        String shortCode = "def456";
+        String originalUrl = "https://google.com";
+
+        when(urlOutputPort.getUrlByShortened(shortCode))
+                .thenReturn(originalUrl);
+        
+        // Primeira chamada
+        String firstResult = redirecionarUseCase.redirecionar(shortCode);
+
+        // Segunda chamada
+        String secondResult = redirecionarUseCase.redirecionar(shortCode);
+
+        assertEquals(originalUrl, firstResult);
+        assertEquals(originalUrl, secondResult);
+
+        verify(urlOutputPort, times(1))
+                .getUrlByShortened(shortCode);
     }
 }
