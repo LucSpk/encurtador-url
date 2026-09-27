@@ -92,14 +92,7 @@ A aplicação está configurada para conectar em `localhost:6379` e usa cache co
 
 ## Executando a aplicação
 
-Clone e entre na pasta do projeto:
-
-```bash
-git clone <URL_DO_REPOSITORIO>
-cd encurtador-url
-```
-
-Inicie a aplicação com o Maven Wrapper:
+Na raiz do projeto, inicie a aplicação com o Maven Wrapper:
 
 ```bash
 ./mvnw spring-boot:run
@@ -115,7 +108,6 @@ A API ficará disponível em:
 
 - `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
-- Health check: `http://localhost:8080/actuator/health`
 
 ### Base URL da aplicação
 
@@ -201,44 +193,46 @@ Quando o código curto não existe, a API devolve `404` com um payload padroniza
   "friendlyMessage": "URL não encontrada",
   "technicalMessage": "URL não encontrada para o código encurtado fornecido.",
   "errorCode": 404,
-  "details": null,
-  "traceId": null,
-  "timestamp": "2026-08-23T12:00:00-03:00[America/Sao_Paulo]"
+  "details": {},
+  "path": "/codigo-inexistente",
+  "traceId": "<UUID ou valor enviado no header>",
+  "timestamp": "<data e hora do erro em America/Sao_Paulo>"
 }
 ```
 
 ## Estrutura do projeto
 
 ```text
-src/
-├── main/
-│   ├── java/
-│   │   └── br/com/lucas/alves/encurtador_url/
-│   │       ├── api/                 # Controllers, requests e responses
-│   │       ├── application/         # Casos de uso e ports
-│   │       ├── config/              # Configurações gerais da aplicação
-│   │       ├── domain/              # Entidades e exceções de domínio
-│   │       ├── handlers/            # Tratamento padronizado de erros
-│   │       ├── infrastructure/      # Implementações de persistência
-│   │       └── EncurtadorUrlApplication.java
-│   └── resources/
-│       └── application.yaml
-├── test/
-│   └── java/                       # Testes unitários do projeto
-├── doc/
-│   └── postgresql_docker_guia.md
+.
+├── src/
+│   ├── main/
+│   │   ├── java/br/com/lucas/alves/encurtador_url/
+│   │   │   ├── api/                 # Controllers, requests e responses
+│   │   │   ├── application/         # Casos de uso e ports
+│   │   │   ├── config/              # Configurações da aplicação
+│   │   │   ├── domain/              # Entidades, exceções e utilitários
+│   │   │   ├── handlers/            # Tratamento padronizado de erros
+│   │   │   ├── infrastructure/      # Persistência PostgreSQL
+│   │   │   └── EncurtadorUrlApplication.java
+│   │   └── resources/application.yaml
+│   └── test/
+│       ├── java/                    # Testes unitários e de integração
+│       └── resources/
+│           ├── application.yaml
+│           └── db/schema.sql
+├── doc/postgresql_docker_guia.md
 ├── pom.xml
-├── mvnw / mvnw.cmd
-├── README.md
-└── target/
+├── mvnw
+├── mvnw.cmd
+└── README.md
 ```
 
 ## Fluxo da aplicação
 
 1. O cliente envia uma URL para `POST /url`.
-2. A requisição recebe um `traceId` (gerado automaticamente pelo interceptor ou fornecido no header).
-3. A aplicação tenta salvar a URL com esse valor como `short_code` no PostgreSQL.
-4. Se a URL já existir, o código curto existente é reutilizado.
+2. O filtro usa o `traceId` do header quando informado; caso contrário, gera um UUID.
+3. Esse `traceId` é usado como `short_code` ao salvar a URL no PostgreSQL.
+4. Se a URL já estiver cadastrada, a aplicação retorna o código curto existente.
 5. Em `GET /{shortCode}`, a aplicação consulta o Redis antes do banco.
 6. Quando encontra o registro, responde com redirecionamento `302` para a URL original.
 
@@ -264,7 +258,7 @@ java -jar target/encurtador-url-0.0.1-SNAPSHOT.jar
 
 ## Observações importantes
 
-- O projeto depende de PostgreSQL e Redis em execução antes do startup da API.
+- O projeto depende de PostgreSQL e Redis em execução para persistência e cache.
 - O banco não realiza migrations automáticas; é necessário criar a tabela manualmente.
 - O swagger oferece uma interface visual para testar os endpoints sem uso de ferramentas externas.
-- A aplicação usa `traceId` como identificador curto da URL, e o filtro HTTP garante que ele exista em toda requisição que não seja health check.
+- O filtro gera um `traceId` UUID quando o header não é enviado. No `POST /url`, o valor informado ou gerado é usado como código curto.
