@@ -9,8 +9,10 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
@@ -97,7 +99,15 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
             }
             throw new FailToRetrieveGeneratedIdException("Falha ao recuperar o ID gerado.");
         }
-        } catch (SQLException e) {
+        } catch (SQLException e) {    
+            if (e instanceof PSQLException pgException
+                    && "23505".equals(pgException.getSQLState())
+                    && pgException.getServerErrorMessage() != null
+                    && "urls_original_url_unique".equals(
+                            pgException.getServerErrorMessage().getConstraint())) {
+                throw new DuplicateKeyException("Esta URL já está cadastrada.");
+            }
+
             LOGGER.error("Error saving URL: {}", e.getMessage());
             throw new RuntimeException("Error saving URL", e);
         } 
