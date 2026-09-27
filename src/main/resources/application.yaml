@@ -17,13 +17,12 @@ spring:
     url: jdbc:postgresql://localhost:5432/url_shortener
     username: postgres
     password: postgres
-
-  hikari:
-    maximum-pool-size: 10
-    minimum-idle: 2
-    connection-timeout: 30000
-    idle-timeout: 600000
-    max-lifetime: 1800000
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
 logging:
   pattern:
