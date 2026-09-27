@@ -9,34 +9,38 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import br.com.lucas.alves.encurtador_url.application.ports.input.IRedirecionarInputPort;
 import br.com.lucas.alves.encurtador_url.application.ports.output.IUrlOutputPort;
 import br.com.lucas.alves.encurtador_url.application.usecases.RedirecionarUseCase;
 
-@SpringBootTest
-@Import(CacheIntegrationTest.TestCacheConfig.class)
+@SpringJUnitConfig(CacheIntegrationTest.TestCacheConfig.class)
 class CacheIntegrationTest {
 
     @TestConfiguration
+    @EnableCaching
     static class TestCacheConfig {
 
-        @Bean(name = "testCacheManager")
-        @Primary
-        CacheManager testCacheManager() {
+        @Bean
+        CacheManager cacheManager() {
             return new ConcurrentMapCacheManager("urls");
+        }
+
+        @Bean
+        RedirecionarUseCase redirecionarUseCase(IUrlOutputPort urlOutputPort) {
+            return new RedirecionarUseCase(urlOutputPort);
         }
     }
 
     @Autowired 
-    private RedirecionarUseCase redirecionarUseCase;
+    private IRedirecionarInputPort redirecionarUseCase;
 
     @MockitoBean 
     private IUrlOutputPort urlOutputPort;
@@ -50,8 +54,8 @@ class CacheIntegrationTest {
     }
     
     @Test
-    @DisplayName("Deve buscar a URL no repository e armazená-la no Redis")
-    void deveArmazenarUrlNoRedis() {
+    @DisplayName("Deve buscar a URL no repository e armazená-la no cache")
+    void deveArmazenarUrlNoCache() {
         String shortCode = "abc123";
         String originalUrl = "https://google.com";
 
@@ -74,8 +78,8 @@ class CacheIntegrationTest {
     }
 
     @Test
-    @DisplayName("Deve retornar a URL do Redis sem consultar o repository novamente")
-    void deveRetornarUrlDoRedis() {
+    @DisplayName("Deve retornar a URL do cache sem consultar o repository novamente")
+    void deveRetornarUrlDoCache() {
 
         String shortCode = "def456";
         String originalUrl = "https://google.com";
