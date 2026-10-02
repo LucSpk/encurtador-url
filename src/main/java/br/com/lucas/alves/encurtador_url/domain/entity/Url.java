@@ -5,6 +5,8 @@ public class Url {
     private String shortCode;
     private String originalUrl;
     private String createdAt;
+    private Long expiresAt;
+    private Integer ttlMinutes;
 
     public long getId() {
         return id;
@@ -36,5 +38,21 @@ public class Url {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
-    }    
+    }
+
+    public Long getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(Long expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public Integer getTtlMinutes() {
+        return ttlMinutes;
+    }
+
+    public void setTtlMinutes(Integer ttlMinutes) {
+        this.ttlMinutes = ttlMinutes;
+    }
 }
