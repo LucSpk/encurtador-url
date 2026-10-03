@@ -3,7 +3,6 @@ package br.com.lucas.alves.encurtador_url.application.usecases;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import br.com.lucas.alves.encurtador_url.api.requests.EncurtarRequest;
 import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
@@ -16,6 +15,8 @@ import br.com.lucas.alves.encurtador_url.domain.exceptions.UrlNotFoundAfterDupli
 public class UrlUseCase implements IUrlInputPort {
     private final String baseUrl;
     private final IUrlOutputPort urlRepository;
+    @Value("${app.shortener.default-ttl-minutes:0}")
+    private Integer defaultTtlMinutes;
 
     public UrlUseCase(IUrlOutputPort urlRepository,  @Value("${app.shortener.base-url}") String baseUrl) {
         this.urlRepository = urlRepository;
@@ -36,7 +37,12 @@ public class UrlUseCase implements IUrlInputPort {
         }
         
         try {
-            urlRepository.saveUrl(request.getUrl(), traceId);
+            // urlRepository.saveUrl(request.getUrl(), traceId);
+            Integer ttlMinutes = request.getTtlMinutes() != null 
+                ? request.getTtlMinutes() 
+                : (defaultTtlMinutes > 0 ? defaultTtlMinutes : null);
+            
+            urlRepository.saveUrlWithTtl(request.getUrl(), traceId, ttlMinutes);
 
             return new EncurtarResponse(
                 traceId,

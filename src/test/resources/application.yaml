@@ -1,3 +1,4 @@
 app:
   shortener:
     base-url: ${APP_SHORTENER_BASE_URL:http://localhost:8080/}
+    default-ttl-minutes: 0
