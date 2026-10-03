@@ -29,6 +29,7 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
     private static final String INSERT_URL_QUERY = "INSERT INTO urls (short_code, original_url) VALUES (?, ?)";
     private static final String SELECT_URL_QUERY = "SELECT original_url FROM urls WHERE short_code = ?";
     private static final String INSERT_URL_WITH_TTL_QUERY = "INSERT INTO urls (short_code, original_url, expires_at, ttl_minutes) VALUES (?, ?, ?, ?)";
+    private static final String SELECT_URL_WITH_EXPIRY = "SELECT original_url, expires_at FROM urls WHERE short_code = ?";
 
     private final Logger LOGGER = LoggerFactory.getLogger(UrlRepository.class);
 
@@ -36,49 +37,6 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
 
     public UrlRepository(DataSource dataSource) {
         this.dataSource = dataSource;
-    }
-
-    @Override
-    public long saveUrlWithTtl(String original, String shortened, Integer ttlMinutes) {
-        try (Connection connection = dataSource.getConnection(); 
-            PreparedStatement ps = connection.prepareStatement(INSERT_URL_WITH_TTL_QUERY, Statement.RETURN_GENERATED_KEYS)) {
-            
-            ps.setString(1, shortened);
-            ps.setString(2, original);
-            
-            // Calcular data de expiração
-            Long expiresAt = null;
-            if (ttlMinutes != null && ttlMinutes > 0) {
-                expiresAt = System.currentTimeMillis() + (ttlMinutes * 60 * 1000L);
-            }
-            
-            if (expiresAt != null) {
-                ps.setLong(3, expiresAt);
-                ps.setInt(4, ttlMinutes);
-            } else {
-                ps.setNull(3, java.sql.Types.BIGINT);
-                ps.setNull(4, java.sql.Types.INTEGER);
-            }
-
-            int result = ps.executeUpdate();
-
-            if (result == 0) {
-                throw new FailToInsertException("Falha ao inserir URL no banco de dados.");
-            }
-
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    Long id = rs.getLong(1);
-                    LOGGER.info("URL salva com sucesso com id: {} e TTL: {} minutos", id, ttlMinutes);
-                    return id;
-                }
-            }
-            
-            throw new FailToRetrieveGeneratedIdException("Falha ao recuperar ID gerado.");
-        } catch (SQLException e) {
-            LOGGER.error("Error saving URL: {}", e.getMessage());
-            throw new RuntimeException("Error saving URL", e);
-        }
     }
 
     @Override
@@ -111,6 +69,8 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
                     url.setShortCode(rs.getString("short_code"));
                     url.setOriginalUrl(rs.getString("original_url"));
                     url.setCreatedAt(rs.getString("created_at"));
+                    url.setExpiresAt(rs.getLong("expires_at"));
+                    url.setTtlMinutes(rs.getInt("ttl_minutes"));
                     return Optional.of(url);
                 }
             }
@@ -169,6 +129,93 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
         } catch (SQLException e) {
             LOGGER.error("Error updating URL short code: {}", e.getMessage());
             throw new RuntimeException("Error updating URL short code", e);
+        }
+    }
+
+    @Override
+    public long saveUrlWithTtl(String original, String shortened, Integer ttlMinutes) {
+        try (Connection connection = dataSource.getConnection(); 
+            PreparedStatement ps = connection.prepareStatement(INSERT_URL_WITH_TTL_QUERY, Statement.RETURN_GENERATED_KEYS)) {
+            
+            ps.setString(1, shortened);
+            ps.setString(2, original);
+            
+            // Calcular data de expiração
+            Long expiresAt = null;
+            if (ttlMinutes != null && ttlMinutes > 0) {
+                expiresAt = System.currentTimeMillis() + (ttlMinutes * 60 * 1000L);
+            }
+            
+            if (expiresAt != null) {
+                ps.setLong(3, expiresAt);
+                ps.setInt(4, ttlMinutes);
+            } else {
+                ps.setNull(3, java.sql.Types.BIGINT);
+                ps.setNull(4, java.sql.Types.INTEGER);
+            }
+
+            int result = ps.executeUpdate();
+
+            if (result == 0) {
+                throw new FailToInsertException("Falha ao inserir URL no banco de dados.");
+            }
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    Long id = rs.getLong(1);
+                    LOGGER.info("URL salva com sucesso com id: {} e TTL: {} minutos", id, ttlMinutes);
+                    return id;
+                }
+            }
+            
+            throw new FailToRetrieveGeneratedIdException("Falha ao recuperar ID gerado.");
+        } catch (SQLException e) {
+            LOGGER.error("Error saving URL: {}", e.getMessage());
+            throw new RuntimeException("Error saving URL", e);
+        }
+    }
+
+    @Override
+    public String getUrlByShortCodeWithExpiryCheck(String shortCode) {
+       try (Connection connection = dataSource.getConnection(); 
+             PreparedStatement ps = connection.prepareStatement(SELECT_URL_WITH_EXPIRY)) {
+            
+            ps.setString(1, shortCode);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String originalUrl = rs.getString("original_url");
+                    Long expiresAt = rs.getLong("expires_at");
+                    
+                    // Verificar se a URL expirou
+                    if (expiresAt > 0 && System.currentTimeMillis() > expiresAt) {
+                        LOGGER.warn("URL com código {} expirou em: {}", shortCode, new java.util.Date(expiresAt));
+                        deleteExpiredUrl(shortCode); // 🆕 Deletar URL expirada (opcional)
+                        throw new ShortCodeNotFoundException("URL expirada para o código encurtado fornecido.");
+                    }
+                    
+                    LOGGER.info("URL found and valid: {}", originalUrl);
+                    return originalUrl;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Error retrieving URL with expiry check: {}", e.getMessage());
+            throw new RuntimeException("Error retrieving URL with expiry check", e);
+        }
+        
+        throw new ShortCodeNotFoundException("URL não encontrada para o código encurtado fornecido.");
+    }
+
+    private void deleteExpiredUrl(String shortCode) {
+        try (Connection connection = dataSource.getConnection(); 
+             PreparedStatement ps = connection.prepareStatement("DELETE FROM urls WHERE short_code = ?")) {
+            
+            ps.setString(1, shortCode);
+            ps.executeUpdate();
+            LOGGER.info("URL expirada deletada: {}", shortCode);
+        } catch (SQLException e) {
+            LOGGER.warn("Erro ao deletar URL expirada {}: {}", shortCode, e.getMessage());
+            // Não lançar exceção aqui, é apenas uma limpeza
         }
     }
 }
