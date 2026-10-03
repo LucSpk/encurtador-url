@@ -5,6 +5,7 @@ import java.util.Optional;
 import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 
 public interface IUrlOutputPort {
+    long saveUrlWithTtl(String original, String shortened, Integer ttlMinutes);
     String getUrlByShortened(String shortened);
     Optional<Url> getByUrl(String original);
     long saveUrl(String original, String shortened);

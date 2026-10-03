@@ -28,6 +28,7 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
     private static final String UPDATE_URL_SET_SHORT_CODE_WHERE_ID_QUERY = "UPDATE urls SET short_code = ? WHERE id = ?";
     private static final String INSERT_URL_QUERY = "INSERT INTO urls (short_code, original_url) VALUES (?, ?)";
     private static final String SELECT_URL_QUERY = "SELECT original_url FROM urls WHERE short_code = ?";
+    private static final String INSERT_URL_WITH_TTL_QUERY = "INSERT INTO urls (short_code, original_url, expires_at, ttl_minutes) VALUES (?, ?, ?, ?)";
 
     private final Logger LOGGER = LoggerFactory.getLogger(UrlRepository.class);
 
@@ -35,6 +36,49 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
 
     public UrlRepository(DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+
+    @Override
+    public long saveUrlWithTtl(String original, String shortened, Integer ttlMinutes) {
+        try (Connection connection = dataSource.getConnection(); 
+            PreparedStatement ps = connection.prepareStatement(INSERT_URL_WITH_TTL_QUERY, Statement.RETURN_GENERATED_KEYS)) {
+            
+            ps.setString(1, shortened);
+            ps.setString(2, original);
+            
+            // Calcular data de expiração
+            Long expiresAt = null;
+            if (ttlMinutes != null && ttlMinutes > 0) {
+                expiresAt = System.currentTimeMillis() + (ttlMinutes * 60 * 1000L);
+            }
+            
+            if (expiresAt != null) {
+                ps.setLong(3, expiresAt);
+                ps.setInt(4, ttlMinutes);
+            } else {
+                ps.setNull(3, java.sql.Types.BIGINT);
+                ps.setNull(4, java.sql.Types.INTEGER);
+            }
+
+            int result = ps.executeUpdate();
+
+            if (result == 0) {
+                throw new FailToInsertException("Falha ao inserir URL no banco de dados.");
+            }
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    Long id = rs.getLong(1);
+                    LOGGER.info("URL salva com sucesso com id: {} e TTL: {} minutos", id, ttlMinutes);
+                    return id;
+                }
+            }
+            
+            throw new FailToRetrieveGeneratedIdException("Falha ao recuperar ID gerado.");
+        } catch (SQLException e) {
+            LOGGER.error("Error saving URL: {}", e.getMessage());
+            throw new RuntimeException("Error saving URL", e);
+        }
     }
 
     @Override
