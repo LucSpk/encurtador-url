@@ -73,8 +73,17 @@ CREATE TABLE IF NOT EXISTS urls (
     id BIGSERIAL PRIMARY KEY,
     short_code VARCHAR(32) UNIQUE,
     original_url TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at BIGINT,
+    ttl_minutes INTEGER
 );
+```
+
+Se a tabela `urls` já existir, adicione as colunas usadas pelo prazo de expiração:
+
+```sql
+ALTER TABLE urls ADD COLUMN IF NOT EXISTS expires_at BIGINT;
+ALTER TABLE urls ADD COLUMN IF NOT EXISTS ttl_minutes INTEGER;
 ```
 
 O guia adicional de operação do PostgreSQL está em [doc/postgresql_docker_guia.md](doc/postgresql_docker_guia.md).
