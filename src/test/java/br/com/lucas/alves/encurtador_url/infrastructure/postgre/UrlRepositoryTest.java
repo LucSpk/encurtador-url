@@ -110,7 +110,7 @@ class UrlRepositoryTest {
     class GetByUrlTests {
         private void givenSuccessfulQuery() throws SQLException {
             when(dataSource.getConnection()).thenReturn(connection);
-            when(connection.prepareStatement("SELECT id, short_code, original_url, created_at FROM urls WHERE original_url = ?"))
+            when(connection.prepareStatement("SELECT id, short_code, original_url, created_at, expires_at, ttl_minutes FROM urls WHERE original_url = ?"))
                 .thenReturn(preparedStatement);
             when(preparedStatement.executeQuery()).thenReturn(resultSet);
         }

@@ -1,6 +1,8 @@
 package br.com.lucas.alves.encurtador_url.integracao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import br.com.lucas.alves.encurtador_url.domain.entity.Url;
 import br.com.lucas.alves.encurtador_url.infrastructure.postgre.UrlRepository;
 
 @SpringBootTest
@@ -56,5 +59,21 @@ class UrlRepositoryIntegrationTest {
             "https://www.exemplo.com",
             urlRepository.getUrlByShortened("abc123")
         );
+    }
+
+    @Test
+    void deveSalvarUrlComPrazoDeExpiracaoNoPostgres() {
+        urlRepository.saveUrlWithTtl(
+            "https://www.exemplo.com/com-expiracao",
+            "abc124",
+            15
+        );
+
+        Url url = urlRepository.getByUrl("https://www.exemplo.com/com-expiracao")
+            .orElseThrow();
+
+        assertEquals(15, url.getTtlMinutes());
+        assertNotNull(url.getExpiresAt());
+        assertTrue(url.getExpiresAt() > System.currentTimeMillis());
     }
 }

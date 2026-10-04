@@ -24,7 +24,7 @@ import br.com.lucas.alves.encurtador_url.domain.exceptions.ShortCodeNotFoundExce
 
 @Repository
 public class UrlRepository implements IUrlOutputPort {
-private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code, original_url, created_at FROM urls WHERE original_url = ?";
+    private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code, original_url, created_at, expires_at, ttl_minutes FROM urls WHERE original_url = ?";
     private static final String UPDATE_URL_SET_SHORT_CODE_WHERE_ID_QUERY = "UPDATE urls SET short_code = ? WHERE id = ?";
     private static final String INSERT_URL_QUERY = "INSERT INTO urls (short_code, original_url) VALUES (?, ?)";
     private static final String SELECT_URL_QUERY = "SELECT original_url FROM urls WHERE short_code = ?";
@@ -140,13 +140,8 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
             ps.setString(1, shortened);
             ps.setString(2, original);
             
-            // Calcular data de expiração
-            Long expiresAt = null;
             if (ttlMinutes != null && ttlMinutes > 0) {
-                expiresAt = System.currentTimeMillis() + (ttlMinutes * 60 * 1000L);
-            }
-            
-            if (expiresAt != null) {
+                long expiresAt = System.currentTimeMillis() + (ttlMinutes * 60 * 1000L);
                 ps.setLong(3, expiresAt);
                 ps.setInt(4, ttlMinutes);
             } else {
@@ -170,6 +165,14 @@ private static final String SELECT_URL_BY_ORIGINAL_URL = "SELECT id, short_code,
             
             throw new FailToRetrieveGeneratedIdException("Falha ao recuperar ID gerado.");
         } catch (SQLException e) {
+            if (e instanceof PSQLException pgException
+                    && "23505".equals(pgException.getSQLState())
+                    && pgException.getServerErrorMessage() != null
+                    && "urls_original_url_unique".equals(
+                            pgException.getServerErrorMessage().getConstraint())) {
+                throw new DuplicateKeyException("Esta URL já está cadastrada.");
+            }
+            
             LOGGER.error("Error saving URL: {}", e.getMessage());
             throw new RuntimeException("Error saving URL", e);
         }
