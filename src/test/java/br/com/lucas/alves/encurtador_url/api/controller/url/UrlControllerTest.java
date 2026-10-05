@@ -33,7 +33,7 @@ class UrlControllerTest {
     @DisplayName("Quando uma URL válida é fornecida, então retorna a URL encurtada com código de status 201")
     void whenValidUrlIsProvided_ThenReturnShortenedUrl_WithStatusCode201() {
         EncurtarResponse encurtarResponse = new EncurtarResponse("shortCode", "http://short.url/shortCode");
-        EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+        EncurtarRequest request = new EncurtarRequest("https://www.example.com", null);
 
         when(urlInputPort.encurtarUrl(any(EncurtarRequest.class), any())).thenReturn(encurtarResponse);
 

@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import br.com.lucas.alves.encurtador_url.api.requests.EncurtarRequest;
 import br.com.lucas.alves.encurtador_url.api.responses.EncurtarResponse;
@@ -35,6 +36,7 @@ class UrlUseCaseTest {
     @BeforeEach 
     void setUp() {
         urlUseCase = new UrlUseCase(urlRepository, "http://localhost:8080/");
+        ReflectionTestUtils.setField(urlUseCase, "defaultTtlMinutes", 0);
     }
 
     @Nested 
@@ -44,9 +46,9 @@ class UrlUseCaseTest {
         @Test
         @DisplayName ("Quando uma URL válida é fornecida, então retorna a resposta de encurtamento")
         void whenValidUrlIsProvided_ThenReturnsShortenedUrl() {
-            when(urlRepository.saveUrl("https://www.example.com", "123456")).thenReturn(1L);
+            when(urlRepository.saveUrlWithTtl("https://www.example.com", "123456", null)).thenReturn(1L);
             
-            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com", null);
             EncurtarResponse response = urlUseCase.encurtarUrl(request, "123456");
 
             System.out.println("Response: " + response.getShortCode() + ", " + response.getShortUrl());
@@ -55,13 +57,13 @@ class UrlUseCaseTest {
             assertEquals("123456", response.getShortCode());
             assertEquals("http://localhost:8080/123456", response.getShortUrl());
 
-            verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
+            verify(urlRepository, times(1)).saveUrlWithTtl("https://www.example.com", "123456", null);
         }
 
         @Test
         @DisplayName ("Quando uma URL duplicada é fornecida, então retorna a resposta de encurtamento existente")
         void whenDuplicateUrlIsProvided_ThenReturnsExistingShortenedUrl() {
-            when(urlRepository.saveUrl("https://www.example.com", "123456")).thenThrow(new DuplicateKeyException("Duplicate key"));
+            when(urlRepository.saveUrlWithTtl("https://www.example.com", "123456", null)).thenThrow(new DuplicateKeyException("Duplicate key"));
 
             Url existingUrl = new Url();
             existingUrl.setShortCode("123456");
@@ -70,14 +72,14 @@ class UrlUseCaseTest {
 
             when(urlRepository.getByUrl("https://www.example.com")).thenReturn(Optional.of(existingUrl));
             
-            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com", null);
             EncurtarResponse response = urlUseCase.encurtarUrl(request, "123456");
 
             assertNotNull(response);
             assertEquals("123456", response.getShortCode());
             assertEquals("http://localhost:8080/123456", response.getShortUrl());
 
-            verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
+            verify(urlRepository, times(1)).saveUrlWithTtl("https://www.example.com", "123456", null);
             verify(urlRepository, times(1)).getByUrl("https://www.example.com");
         }
 
@@ -85,7 +87,7 @@ class UrlUseCaseTest {
         @DisplayName("Quando a URL base não está configurada, então lança uma exceção")
         void whenBaseUrlIsNotConfigured_ThenThrowsException() {
             UrlUseCase useCaseWithoutBaseUrl = new UrlUseCase(urlRepository, "");
-            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com", null);
 
             IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
@@ -93,14 +95,14 @@ class UrlUseCaseTest {
             );
 
             assertEquals("Base URL is not configured.", exception.getMessage());
-            verify(urlRepository, times(0)).saveUrl("https://www.example.com", "123456");
+            verify(urlRepository, times(0)).saveUrlWithTtl("https://www.example.com", "123456", null);
         }
 
         @Test
         @DisplayName("Quando a URL base é nula, então lança uma exceção")
         void whenBaseUrlIsNull_ThenThrowsException() {
             UrlUseCase useCaseWithoutBaseUrl = new UrlUseCase(urlRepository, null);
-            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com", null);
 
             IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
@@ -108,55 +110,55 @@ class UrlUseCaseTest {
             );
 
             assertEquals("Base URL is not configured.", exception.getMessage());
-            verify(urlRepository, times(0)).saveUrl("https://www.example.com", "123456");
+            verify(urlRepository, times(0)).saveUrlWithTtl("https://www.example.com", "123456", null);
         }
 
         @Test 
         @DisplayName("Quando tenta salvar recebe uma excption qualquer e retorna uma RuntimeException")
         void whenSaveThrowsAnyException_ThenThrowsRuntimeException() {
-            when(urlRepository.saveUrl("https://www.example.com", "123456")).thenThrow(new RuntimeException("Database error"));
+            when(urlRepository.saveUrlWithTtl("https://www.example.com", "123456", null)).thenThrow(new RuntimeException("Database error"));
             
-            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com", null);
             RuntimeException exception = assertThrows(
                 RuntimeException.class,
                 () -> urlUseCase.encurtarUrl(request, "123456")
             );
 
             assertEquals("Error while shortening URL", exception.getMessage());
-            verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
+            verify(urlRepository, times(1)).saveUrlWithTtl("https://www.example.com", "123456", null);
         }
 
         @Test 
         @DisplayName("Quando uma URL duplicada é fornecida, recebe erro ao chamar getByUrl e retorna uma RuntimeException")
         void whenDuplicateUrlIsProvidedAndGetByUrlThrowsException_ThenThrowsRuntimeException() {
-            when(urlRepository.saveUrl("https://www.example.com", "123456")).thenThrow(new DuplicateKeyException("Duplicate key"));
+            when(urlRepository.saveUrlWithTtl("https://www.example.com", "123456", null)).thenThrow(new DuplicateKeyException("Duplicate key"));
             when(urlRepository.getByUrl("https://www.example.com")).thenThrow(new RuntimeException("Database error"));
 
-            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com", null);
             RuntimeException exception = assertThrows(
                 RuntimeException.class,
                 () -> urlUseCase.encurtarUrl(request, "123456")
             );
 
             assertEquals("Database error", exception.getMessage());
-            verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
+            verify(urlRepository, times(1)).saveUrlWithTtl("https://www.example.com", "123456", null);
             verify(urlRepository, times(1)).getByUrl("https://www.example.com");
         } 
 
         @Test 
         @DisplayName("Quando uma URL duplicada é fornecida, mas getByUrl retorna null, então lança uma UrlNotFoundAfterDuplicateKeyException")
         void whenDuplicateUrlIsProvidedAndGetByUrlReturnsNull_ThenThrowsUrlNotFoundAfterDuplicateKeyException() {
-            when(urlRepository.saveUrl("https://www.example.com", "123456")).thenThrow(new DuplicateKeyException("Duplicate key"));
+            when(urlRepository.saveUrlWithTtl("https://www.example.com", "123456", null)).thenThrow(new DuplicateKeyException("Duplicate key"));
             when(urlRepository.getByUrl("https://www.example.com")).thenReturn(Optional.empty());
 
-            EncurtarRequest request = new EncurtarRequest("https://www.example.com");
+            EncurtarRequest request = new EncurtarRequest("https://www.example.com", null);
             UrlNotFoundAfterDuplicateKeyException exception = assertThrows(
                 UrlNotFoundAfterDuplicateKeyException.class,
                 () -> urlUseCase.encurtarUrl(request, "123456")
             );
 
             assertEquals("URL not found after DuplicateKeyException", exception.getMessage());
-            verify(urlRepository, times(1)).saveUrl("https://www.example.com", "123456");
+            verify(urlRepository, times(1)).saveUrlWithTtl("https://www.example.com", "123456", null);
             verify(urlRepository, times(1)).getByUrl("https://www.example.com");
         }
 
@@ -164,15 +166,15 @@ class UrlUseCaseTest {
         @DisplayName("Quando request possui argumantos nullo retornar illegalArgumentException")
         void whenRequestHasNullArguments_ThenThrowIllegalArgumentException() {
             validaIllegalArgumentException(null, "123456", "URL must not be null or empty");
-            validaIllegalArgumentException(new EncurtarRequest(null), "123456", "URL must not be null or empty");
-            validaIllegalArgumentException(new EncurtarRequest(""), "123456", "URL must not be null or empty");
+            validaIllegalArgumentException(new EncurtarRequest(null, null), "123456", "URL must not be null or empty");
+            validaIllegalArgumentException(new EncurtarRequest("", null), "123456", "URL must not be null or empty");
         }
 
         @Test 
         @DisplayName("Quando traceId é nullo ou vazio retornar illegalArgumentException")
         void whenTraceIdIsNullOrEmpty_ThenThrowIllegalArgumentException() {
-            validaIllegalArgumentException(new EncurtarRequest("https://www.example.com"), null, "Trace ID must not be null or empty");
-            validaIllegalArgumentException(new EncurtarRequest("https://www.example.com"), "", "Trace ID must not be null or empty");
+            validaIllegalArgumentException(new EncurtarRequest("https://www.example.com", null), null, "Trace ID must not be null or empty");
+            validaIllegalArgumentException(new EncurtarRequest("https://www.example.com", null), "", "Trace ID must not be null or empty");
         }
 
         private void validaIllegalArgumentException(EncurtarRequest request, String traceId, String expectedMessage) {
